@@ -4,6 +4,7 @@ import TablaFrecuencias from '../componentes/TablaFrecuencias';
 import Graficos from '../componentes/Graficos';
 import ClearButton from '../componentes/ClearButton';
 import InputForm from '../componentes/InputForm';
+import Probabilidad from '../componentes/Probabilidad';
 
 const CalculosPage = ({ 
   modo, 
@@ -37,6 +38,8 @@ const CalculosPage = ({
         <h3>Estadísticos Básicos</h3>
         <StatsGrid estadisticos={resultados.estadisticos} />
       </section>
+
+      <Probabilidad datos={resultados.datosOriginales} />
 
       <div className="results-flex">
         <section className="results-section table-section">
