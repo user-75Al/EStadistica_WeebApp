@@ -7,6 +7,7 @@ import ConjuntosPage from './presentation/paginas/ConjuntosPage';
 import ArbolPage from './presentation/paginas/ArbolPage';
 import PermutacionesPage from './presentation/paginas/PermutacionesPage';
 import PillNav from './presentation/componentes/PillNav';
+import ClearButton from './presentation/componentes/ClearButton';
 import { ServiciosEstadistica } from './application/implementaciones/ServiciosEstadistica';
 import { LocalDatosRepository } from './infrastructure/implementaciones/LocalDatosRepository';
 import './presentation/estilos/global.css';
@@ -17,7 +18,6 @@ const AppContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Inyección de dependencias
   const servicios = useMemo(() => {
     const repository = new LocalDatosRepository();
     return new ServiciosEstadistica(repository);
@@ -52,9 +52,10 @@ const AppContent = () => {
     { label: 'Conjuntos', href: '/conjuntos' },
     { label: 'Árbol', href: '/arbol' },
     { label: 'Permutaciones', href: '/permutaciones' },
-    { label: 'Home', href: '/' },
-    { label: 'Limpiar', href: '#', onClick: handleClear }
+    { label: 'Home', href: '/' }
   ];
+
+  const showClearButton = location.pathname !== '/';
 
   return (
     <Layout>
@@ -84,6 +85,18 @@ const AppContent = () => {
         <Route path="/arbol" element={<ArbolPage />} />
         <Route path="/permutaciones" element={<PermutacionesPage />} />
       </Routes>
+
+      {showClearButton && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '2rem', 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          zIndex: 1000 
+        }}>
+          <ClearButton onClick={handleClear} />
+        </div>
+      )}
     </Layout>
   );
 };

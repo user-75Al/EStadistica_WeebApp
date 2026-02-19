@@ -21,90 +21,108 @@ const HomePage = ({ onOptionSelect }) => {
     },
   ];
 
+  // Imágenes originales
+  const imagenesConceptos = [
+    "/assets/img1.png",
+    "/assets/img2.png",
+    "/assets/img3.png",
+    "/assets/img4.png",
+    "/assets/img5.png"
+  ];
+
+  const imagenIntercalada = "/assets/img_intercalada.png";
+
+  // Generar lista intercalada: Concepto 1 -> Intercalada -> Concepto 2 ... -> Concepto 5
+  const listaFinal = [];
+  imagenesConceptos.forEach((img, index) => {
+    listaFinal.push({ src: img, type: 'full' });
+    // Añadir la imagen 7 como separador entre conceptos
+    if (index < imagenesConceptos.length - 1) {
+      listaFinal.push({ src: imagenIntercalada, type: 'divider' });
+    }
+  });
+
   return (
-    <div className="home-page" style={{ height: 'auto', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '100px 20px 40px' }}>
+    <div className="home-container" style={{ width: '100vw', overflowX: 'hidden', margin: 0, padding: 0, background: '#000000' }}>
       
-      {/* Sección Educativa (NUEVA) */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-        style={{ 
-          maxWidth: '900px', 
-          width: '100%',
-          marginBottom: '4rem',
-          padding: '2.5rem',
-          background: 'rgba(22, 35, 37, 0.4)',
-          borderRadius: '24px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(12px)',
-          textAlign: 'left'
-        }}
-      >
-        <h2 style={{ fontSize: '2.2rem', marginBottom: '1.5rem', color: 'var(--color-lime)', fontWeight: '800' }}>Conceptos básicos de estadística</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', color: 'var(--color-white)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-          <div>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Población vs Muestra:</strong> La población es el conjunto total de elementos; la muestra es un subconjunto representativo.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Media:</strong> Promedio de todos los valores.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Mediana:</strong> Valor central cuando los datos están ordenados.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Moda:</strong> Valor(es) que más se repiten.</p>
-          </div>
-          <div>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Mínimo y Máximo:</strong> Valor más pequeño y más grande.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Rango:</strong> Diferencia entre máximo y mínimo.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Frecuencias:</strong> Cuántas veces aparece cada valor.</p>
-            <p style={{ marginBottom: '0.8rem' }}><strong style={{ color: 'var(--color-sky)' }}>Gráficos:</strong> Histograma, polígono, ojiva, Pareto.</p>
-          </div>
-        </div>
-        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <p style={{ color: 'var(--color-gray)', fontSize: '1rem', fontStyle: 'italic' }}>
-            "Esta calculadora te permite ingresar datos numéricos y obtener automáticamente todos estos estadísticos, tablas de frecuencias, gráficos y operaciones avanzadas como probabilidad, conjuntos, permutaciones y diagramas de árbol."
-          </p>
-        </div>
-      </motion.div>
-
-      {/* Contenido Original Rediseñado */}
-      <div className="center-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-        <BlurText
-          text="Calculadora de variables"
-          delay={200}
-          animateBy="words"
-          direction="top"
-          className="text-title"
-        />
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          style={{ fontSize: '1.4rem', color: 'var(--color-gray)', margin: '1rem 0 2rem' }}
-        >
-          ¿Desea ingresar sus valores?
-        </motion.p>
-
-        {!showDock && (
-          <div className="start-btn-container" style={{ marginTop: '0' }}>
-            <StartButton onClick={() => setShowDock(true)} />
-          </div>
-        )}
-      </div>
-      
-      {showDock && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="dock-container"
-          style={{ position: 'relative', marginTop: '3rem', bottom: 'auto', transform: 'none' }}
-        >
-          <Dock 
-            items={dockItems}
-            panelHeight={68}
-            baseItemSize={56}
-            magnification={80}
+      {/* SECCIÓN PRINCIPAL (HERO) */}
+      <section style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: 'transparent' }}>
+        <div style={{ zIndex: 2 }}>
+          <BlurText
+            text="Calculadora Estadística"
+            delay={200}
+            animateBy="words"
+            direction="top"
+            className="text-title"
           />
-        </motion.div>
-      )}
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            style={{ fontSize: '1.4rem', color: 'var(--color-gray)', margin: '1rem 0 2rem' }}
+          >
+            ¿Desea continuar?
+          </motion.p>
+
+          {!showDock ? (
+            <div className="start-btn-container">
+              <StartButton onClick={() => setShowDock(true)} />
+            </div>
+          ) : (
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 15 }}
+              style={{ display: 'flex', justifyContent: 'center' }}
+            >
+              <Dock 
+                items={dockItems}
+                panelHeight={80}
+                baseItemSize={65}
+                magnification={100}
+              />
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* SECCIONES DE IMÁGENES INTERCALADAS - Fondo negro garantizado */}
+      <div className="conceptos-scroll" style={{ position: 'relative', zIndex: 10, width: '100vw', background: '#000000' }}>
+        {listaFinal.map((item, idx) => (
+          <section 
+            key={idx}
+            style={{ 
+              height: item.type === 'divider' ? '50vh' : '100vh', // Imagen 7 más baja
+              width: '100vw', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              overflow: 'hidden',
+              margin: 0,
+              padding: 0,
+              background: '#000000' 
+            }}
+          >
+            <motion.img 
+              src={item.src} 
+              alt={`Imagen ${idx + 1}`} 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, amount: 0.2 }}
+              style={{ 
+                width: '100%', // Ocupa todo el ancho
+                height: '100%', 
+                display: 'block', 
+                objectFit: 'cover', // Cubre todo el área asignada
+                margin: 0,
+                padding: 0
+              }} 
+            />
+          </section>
+        ))}
+      </div>
     </div>
   );
 };

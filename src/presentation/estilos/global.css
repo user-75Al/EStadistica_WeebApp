@@ -1,12 +1,109 @@
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap');
+:root {
+  --color-red: #DE443B;
+  --color-blue: #006BB4;
+  --color-dark: #162325;
+  --color-sky: #b1dae7;
+  --color-lime: #caf438;
+  --color-white: #ffffff;
+  --color-gray: #87a4b6;
+  --font-main: 'Ubuntu', sans-serif;
+}
 
-body {
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-dark); /* Color base para evitar destellos blancos */
+}
+
+body {
+  font-family: var(--font-main), sans-serif;
+  color: var(--color-white);
+  overflow-x: hidden;
+  background-color: transparent !important; /* IMPORTANTE: Permitir que Balatro se vea */
 }
 
 #root {
   min-height: 100vh;
+  background-color: transparent;
+}
+
+.app-layout {
+  min-height: 100vh;
+  position: relative;
+  background-color: transparent;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  background-color: transparent;
+}
+
+/* Home Styling */
+.home-container {
+  background-color: transparent !important;
+}
+
+.text-title {
+  font-size: clamp(3rem, 10vw, 5rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+/* Cards & Sections */
+.stat-card, .chart-card, .results-header, .form-container {
+  background: rgba(22, 35, 37, 0.7);
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-blue);
+}
+
+/* Scroll Section */
+.conceptos-scroll section {
+  background-color: transparent !important;
+}
+
+.conceptos-scroll img {
+  max-width: 100%;
+  border-radius: 30px;
+}
+
+/* Input Form */
+.form .input {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.2rem;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.form .input:focus {
+  border-color: var(--color-lime);
+  outline: none;
+}
+
+.send-button {
+  background: var(--color-blue);
+  border-radius: 15px;
+  padding: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.send-button:hover {
+  background: var(--color-sky);
+  color: var(--color-blue);
 }
