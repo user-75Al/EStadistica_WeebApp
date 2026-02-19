@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/EStadistica_WeebApp/static/css/main.8bb5d9ba.css",
+    "main.js": "/EStadistica_WeebApp/static/js/main.3b5b35e5.js",
+    "index.html": "/EStadistica_WeebApp/index.html",
+    "main.8bb5d9ba.css.map": "/EStadistica_WeebApp/static/css/main.8bb5d9ba.css.map",
+    "main.3b5b35e5.js.map": "/EStadistica_WeebApp/static/js/main.3b5b35e5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.8bb5d9ba.css",
+    "static/js/main.3b5b35e5.js"
+  ]
+}
