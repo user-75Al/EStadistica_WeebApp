@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './presentation/componentes/Layout';
 import HomePage from './presentation/paginas/HomePage';
 import CalculosPage from './presentation/paginas/CalculosPage';
