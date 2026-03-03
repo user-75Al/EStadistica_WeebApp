@@ -48,6 +48,7 @@ const ArbolPage = () => {
           str += `\n${nextPasosOp}`;
         } else {
           str += "\n";
+        
         }
       });
       return str;

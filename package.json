@@ -4,17 +4,22 @@
   "private": true,
   "homepage": "https://user-75Al.github.io/EStadistica_WeebApp/",
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
     "chart.js": "^4.4.0",
     "framer-motion": "^12.34.2",
     "gsap": "^3.14.2",
+    "html-to-image": "^1.11.13",
     "motion": "^10.18.0",
     "ogl": "^1.0.11",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
+    "react-pdf-charts": "^1.0.0",
     "react-router-dom": "^6.22.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-tooltip": "^5.30.0",
+    "recharts": "^3.7.0"
   },
   "scripts": {
     "start": "react-scripts start",

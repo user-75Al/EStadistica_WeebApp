@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './presentation/componentes/Layout';
 import HomePage from './presentation/paginas/HomePage';
@@ -15,16 +15,25 @@ import './presentation/estilos/global.css';
 const AppContent = () => {
   const [modo, setModo] = useState(null);
   const [resultados, setResultados] = useState(null);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const servicios = useMemo(() => {
-    const repository = new LocalDatosRepository();
-    return new ServiciosEstadistica(repository);
-  }, []);
+  const repository = useMemo(() => new LocalDatosRepository(), []);
+  const servicios = useMemo(() => new ServiciosEstadistica(repository), [repository]);
+
+  // Recuperar datos al cargar
+  useEffect(() => {
+    const datosGuardados = repository.get();
+    if (datosGuardados) {
+      setResultados(servicios.obtenerResultados(datosGuardados));
+      setModo('manual');
+    }
+  }, [repository, servicios]);
 
   const handleOptionSelect = (selectedModo) => {
     setModo(selectedModo);
+    setError(null);
     if (selectedModo === 'random') {
       const res = servicios.generarYProcesarAleatorios();
       setResultados(res);
@@ -34,17 +43,19 @@ const AppContent = () => {
 
   const handleCalculateManual = (cadena) => {
     try {
+      setError(null);
       const res = servicios.procesarCadena(cadena);
       setResultados(res);
     } catch (e) {
-      alert(e.message);
+      setError(e.message);
     }
   };
 
   const handleClear = () => {
-    servicios.limpiar();
+    repository.clear();
     setModo(null);
     setResultados(null);
+    setError(null);
     navigate('/');
   };
 
@@ -76,7 +87,9 @@ const AppContent = () => {
           <CalculosPage 
             modo={modo}
             resultados={resultados}
+            error={error}
             onCalculate={handleCalculateManual}
+            onClearError={() => setError(null)}
             onRandom={() => handleOptionSelect('random')}
             onClear={handleClear}
           />

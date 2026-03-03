@@ -107,3 +107,70 @@ body {
   background: var(--color-sky);
   color: var(--color-blue);
 }
+
+/* Responsividad para imágenes en móviles */
+@media screen and (max-width: 768px) {
+  
+  /* 1. Eliminar la imagen 7 (Divider Negro) */
+  .conceptos-scroll section:nth-of-type(6) {
+    display: none !important;
+  }
+
+  /* 2. Preparar el contenedor para el apilado */
+  .conceptos-scroll section:not([style*="height: 50vh"]) {
+    height: auto !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    background: #000 !important;
+  }
+
+  /* Ocultar la etiqueta img original en móvil */
+  .conceptos-scroll section:not([style*="height: 50vh"]) img {
+    display: none !important;
+  }
+
+  /* 3. Crear las dos mitades (superior e inferior) */
+  .conceptos-scroll section:not([style*="height: 50vh"])::before,
+  .conceptos-scroll section:not([style*="height: 50vh"])::after {
+    content: "";
+    display: block;
+    width: 100vw;
+    height: 50vh; 
+    background-repeat: no-repeat;
+    background-size: 200% auto; 
+    background-position: center;
+  }
+
+  .conceptos-scroll section:not([style*="height: 50vh"])::before {
+    background-position: left center;
+  }
+
+  .conceptos-scroll section:not([style*="height: 50vh"])::after {
+    background-position: right center;
+  }
+
+  /* 4. Asignación de rutas */
+  .conceptos-scroll section:nth-of-type(1)::before, 
+  .conceptos-scroll section:nth-of-type(1)::after { background-image: url('../../../public/assets/img1.png'); }
+  
+  .conceptos-scroll section:nth-of-type(3)::before, 
+  .conceptos-scroll section:nth-of-type(3)::after { background-image: url('../../../public/assets/img2.png'); }
+  
+  .conceptos-scroll section:nth-of-type(5)::before, 
+  .conceptos-scroll section:nth-of-type(5)::after { background-image: url('../../../public/assets/img3.png'); }
+  
+  .conceptos-scroll section:nth-of-type(7)::before, 
+  .conceptos-scroll section:nth-of-type(7)::after { background-image: url('../../../public/assets/img4.png'); }
+  
+  .conceptos-scroll section:nth-of-type(9)::before, 
+  .conceptos-scroll section:nth-of-type(9)::after { background-image: url('../../../public/assets/img5.png'); }
+
+  /* Ajustar los divisores restantes */
+  .conceptos-scroll section[style*="height: 50vh"] {
+    height: 15vh !important;
+    min-height: 10vh !important;
+    padding: 0 !important;
+  }
+}

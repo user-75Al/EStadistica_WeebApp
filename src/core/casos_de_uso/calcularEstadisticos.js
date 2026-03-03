@@ -4,7 +4,8 @@ export const calcularEstadisticos = (datos) => {
 
   // Media
   const suma = nums.reduce((acc, curr) => acc + curr, 0);
-  const media = (suma / n).toFixed(2);
+  const mediaVal = suma / n;
+  const media = mediaVal.toFixed(2);
 
   // Mediana
   let mediana;
@@ -35,8 +36,6 @@ export const calcularEstadisticos = (datos) => {
         moda.push(Number(num));
       }
     }
-    // Si todos tienen la misma frecuencia mayor que 1 y no hay otros, 
-    // pero si todos tienen la misma frecuencia, se dice que no hay moda
     if (moda.length === Object.keys(frecuencias).length) {
        moda = "Sin moda";
     }
@@ -49,12 +48,19 @@ export const calcularEstadisticos = (datos) => {
   const max = nums[n - 1];
   const rango = max - min;
 
+  // NUEVO: Varianza (Poblacional y Muestral)
+  const sumaCuadrados = nums.reduce((acc, curr) => acc + Math.pow(curr - mediaVal, 2), 0);
+  const varianzaMuestral = (sumaCuadrados / (n - 1)).toFixed(2);
+  const desviacionEstandar = Math.sqrt(Number(varianzaMuestral)).toFixed(2);
+
   return {
     media,
     mediana,
     moda: Array.isArray(moda) ? moda.join(", ") : moda,
     min,
     max,
-    rango
+    rango,
+    varianza: varianzaMuestral,
+    desviacion: desviacionEstandar
   };
 };

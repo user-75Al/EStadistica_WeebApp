@@ -7,13 +7,16 @@ import {
   PointElement,
   LineElement,
   Title,
-  Tooltip,
+  Tooltip as ChartTooltip,
   Legend,
   ArcElement,
   BarController,
   LineController
 } from 'chart.js';
 import { Chart, Bar, Line, Pie } from 'react-chartjs-2';
+import { Tooltip } from 'react-tooltip';
+import { VscInfo } from 'react-icons/vsc';
+import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
 ChartJS.register(
@@ -26,15 +29,37 @@ ChartJS.register(
   LineController,
   ArcElement,
   Title,
-  Tooltip,
+  ChartTooltip,
   Legend
 );
+
+const chartExplanations = {
+  'histograma': {
+    titulo: "Histograma y Polígono",
+    formula: "fᵢ vs xᵢ",
+    desc: "El histograma muestra la distribución de frecuencias absolutas. El polígono une los puntos medios para visualizar la tendencia de la distribución."
+  },
+  'ojiva': {
+    titulo: "Ojiva",
+    formula: "Fᵢ vs xᵢ",
+    desc: "Representa las frecuencias acumuladas. Es fundamental para determinar cuántos datos están por debajo de un valor específico (percentiles)."
+  },
+  'pareto': {
+    titulo: "Diagrama de Pareto",
+    formula: "80/20 Rule",
+    desc: "Muestra los valores ordenados por frecuencia descendente. Ayuda a identificar los pocos valores vitales que representan la mayor parte del total."
+  },
+  'pastel': {
+    titulo: "Gráfico de Pastel",
+    formula: "fᵣ * 360°",
+    desc: "Visualiza la proporción o porcentaje que cada valor representa respecto al total de la muestra."
+  }
+};
 
 const Graficos = ({ frecuencias, datosOriginales }) => {
   const labels = frecuencias.map(f => f.valor);
   const fiData = frecuencias.map(f => f.fi);
   const FiData = frecuencias.map(f => f.Fi);
-  const FrData = frecuencias.map(f => (f.Fr * 100).toFixed(2));
 
   // Datos para Pareto
   const paretoData = [...frecuencias].sort((a, b) => b.fi - a.fi);
@@ -51,7 +76,7 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { labels: { color: '#fff' } },
+      legend: { labels: { color: '#fff', font: { size: 10 } } },
     },
     scales: {
       x: { ticks: { color: '#888' }, grid: { color: '#333' } },
@@ -116,7 +141,7 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
   };
 
   const pieData = {
-    labels: labels.slice(0, 5), // Top 5
+    labels: labels.slice(0, 5),
     datasets: [{
       data: fiData.slice(0, 5),
       backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'],
@@ -126,21 +151,36 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
   return (
     <div className="graficos-container">
       <div className="chart-card">
-        <h3>Histograma y Polígono</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          Histograma y Polígono 
+          <span data-tooltip-id="chart-tooltip" data-tooltip-content="histograma" style={{ cursor: 'help' }}>
+            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
+          </span>
+        </h3>
         <div className="chart-box">
           <Chart type='bar' data={histogramaData} options={commonOptions} />
         </div>
       </div>
       
       <div className="chart-card">
-        <h3>Ojiva (Frecuencia Acumulada)</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          Ojiva (Frecuencia Acumulada)
+          <span data-tooltip-id="chart-tooltip" data-tooltip-content="ojiva" style={{ cursor: 'help' }}>
+            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
+          </span>
+        </h3>
         <div className="chart-box">
           <Line data={ojivaData} options={commonOptions} />
         </div>
       </div>
 
       <div className="chart-card">
-        <h3>Diagrama de Pareto</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          Diagrama de Pareto
+          <span data-tooltip-id="chart-tooltip" data-tooltip-content="pareto" style={{ cursor: 'help' }}>
+            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
+          </span>
+        </h3>
         <div className="chart-box">
           <Chart type='bar' data={paretoChartData} options={{
             ...commonOptions,
@@ -159,11 +199,34 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
       </div>
 
       <div className="chart-card">
-        <h3>Distribución (Top 5)</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          Distribución (Top 5)
+          <span data-tooltip-id="chart-tooltip" data-tooltip-content="pastel" style={{ cursor: 'help' }}>
+            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
+          </span>
+        </h3>
         <div className="chart-box">
           <Pie data={pieData} options={{ ...commonOptions, scales: {} }} />
         </div>
       </div>
+
+      <Tooltip 
+        id="chart-tooltip" 
+        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100, maxWidth: '280px' }}
+        render={({ content }) => (
+          <div style={{ textAlign: 'left', padding: '10px' }}>
+            <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>
+              {chartExplanations[content]?.titulo}
+            </strong>
+            <p style={{ margin: '8px 0', fontSize: '1.1rem', color: 'var(--color-sky)', fontWeight: 'bold' }}>
+              {chartExplanations[content]?.formula}
+            </p>
+            <small style={{ color: '#aaa', lineHeight: '1.4' }}>
+              {chartExplanations[content]?.desc}
+            </small>
+          </div>
+        )}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { calcularEstadisticos } from '../../core/casos_de_uso/calcularEstadisticos';
 import { calcularFrecuencias } from '../../core/casos_de_uso/calcularFrecuencias';
 import { generarAleatorios } from '../../core/casos_de_uso/generarAleatorios';
+import { calcularAgrupados } from '../../core/casos_de_uso/calcularAgrupados';
 import { Datos } from '../../core/entidades/Datos';
 
 export class ServiciosEstadistica {
@@ -34,10 +35,12 @@ export class ServiciosEstadistica {
   obtenerResultados(datos) {
     const estadisticos = calcularEstadisticos(datos);
     const frecuencias = calcularFrecuencias(datos);
+    const agrupados = calcularAgrupados(datos);
     return {
       datosOriginales: datos.getDatos(),
       estadisticos,
-      frecuencias
+      frecuencias,
+      agrupados
     };
   }
 

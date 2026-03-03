@@ -1,20 +1,25 @@
-import { DatosRepository } from '../../core/repositorios/DatosRepository';
+import { Datos } from '../../core/entidades/Datos';
 
-export class LocalDatosRepository extends DatosRepository {
+export class LocalDatosRepository {
   constructor() {
-    super();
-    this.storage = null;
+    this.storageKey = 'weebapp_prob_est1_datos';
   }
 
   save(datos) {
-    this.storage = datos;
+    const dataArray = datos.getDatos();
+    localStorage.setItem(this.storageKey, JSON.stringify(dataArray));
   }
 
   get() {
-    return this.storage;
+    const stored = localStorage.getItem(this.storageKey);
+    if (stored) {
+      const array = JSON.parse(stored);
+      return new Datos(array);
+    }
+    return null;
   }
 
   clear() {
-    this.storage = null;
+    localStorage.removeItem(this.storageKey);
   }
 }
