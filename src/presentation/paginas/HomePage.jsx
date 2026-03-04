@@ -88,23 +88,21 @@ const HomePage = ({ onOptionSelect }) => {
         </div>
       </section>
 
-      {/* SECCIONES DE IMÁGENES INTERCALADAS - RESPONSIVO */}
-      <div className="conceptos-scroll" style={{ position: 'relative', zIndex: 10, width: '100vw', background: '#000000' }}>
+      {/* SECCIONES DE IMÁGENES INTERCALADAS - OPTIMIZADAS */}
+      <div className="conceptos-scroll" style={{ position: 'relative', zIndex: 10, width: '100vw', background: '#000000', lineHeight: 0 }}>
         {listaFinal.map((item, idx) => (
           <section 
             key={idx}
             style={{ 
-              height: item.type === 'divider' ? 'auto' : 'auto', 
-              minHeight: item.type === 'divider' ? '30vh' : '60vh',
               width: '100vw', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              overflow: 'hidden',
               margin: 0,
-              padding: item.type === 'divider' ? '2rem 0' : '0',
+              padding: 0,
               background: '#000000',
-              position: 'relative'
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
             <motion.img 
@@ -112,15 +110,13 @@ const HomePage = ({ onOptionSelect }) => {
               alt={`Imagen ${idx + 1}`} 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true, amount: 0.1 }}
               style={{ 
                 width: '100%', 
-                height: 'auto', // Cambiado para que no se estire
-                maxWidth: '100%',
-                maxHeight: '100vh',
+                height: item.type === 'divider' ? 'clamp(100px, 15vh, 200px)' : 'auto',
                 display: 'block', 
-                objectFit: 'contain', // Cambiado de cover a contain para móviles
+                objectFit: item.type === 'divider' ? 'cover' : 'contain',
                 margin: 0,
                 padding: 0
               }} 
@@ -130,8 +126,8 @@ const HomePage = ({ onOptionSelect }) => {
             {idx === listaFinal.length - 1 && (
               <motion.button
                 onClick={scrollToTop}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 style={{
                   position: 'absolute',
                   bottom: '2rem',
@@ -142,9 +138,6 @@ const HomePage = ({ onOptionSelect }) => {
                   borderRadius: '50px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                   zIndex: 20,
                   fontSize: '0.9rem'
