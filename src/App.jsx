@@ -17,7 +17,9 @@ import './presentation/estilos/global.css';
 
 const AppContent = () => {
   const [modo, setModo] = useState(null);
-  const [resultados, setResultados] = useState(null);
+  const [resultadosA, setResultadosA] = useState(null);
+  const [resultadosB, setResultadosB] = useState(null);
+  const [comparar, setComparar] = useState(false);
   const [error, setError] = useState(null);
   const [historial, setHistorial] = useState([]);
   const navigate = useNavigate();
@@ -27,16 +29,9 @@ const AppContent = () => {
   const servicios = useMemo(() => new ServiciosEstadistica(repository), [repository]);
 
   useEffect(() => {
-    const datosGuardados = repository.get();
-    if (datosGuardados) {
-      setResultados(servicios.obtenerResultados(datosGuardados));
-      setModo('manual');
-    }
-    
-    // Cargar historial
     const storedHistorial = JSON.parse(localStorage.getItem('historial_estadistica') || '[]');
     setHistorial(storedHistorial);
-  }, [repository, servicios]);
+  }, []);
 
   const actualizarHistorial = (datos) => {
     const nuevoHistorial = [
@@ -47,24 +42,37 @@ const AppContent = () => {
     localStorage.setItem('historial_estadistica', JSON.stringify(nuevoHistorial));
   };
 
-  const handleOptionSelect = (selectedModo) => {
+  const handleOptionSelect = (selectedModo, target = 'A') => {
     setModo(selectedModo);
     setError(null);
     if (selectedModo === 'random') {
       const res = servicios.generarYProcesarAleatorios();
-      setResultados(res);
-      toast.success('Datos aleatorios generados');
+      if (target === 'A') {
+        setResultadosA(res);
+        setResultadosB(null);
+        setComparar(false);
+      } else {
+        setResultadosB(res);
+        setComparar(true);
+      }
+      toast.success(`Datos aleatorios generados (Muestra ${target})`);
     }
     navigate('/calculos');
   };
 
-  const handleCalculateManual = (cadena) => {
+  const handleCalculateManual = (cadena, target = 'A') => {
     try {
       setError(null);
       const res = servicios.procesarCadena(cadena);
-      setResultados(res);
+      if (target === 'A') {
+        setResultadosA(res);
+        setComparar(false);
+      } else {
+        setResultadosB(res);
+        setComparar(true);
+      }
       actualizarHistorial(res.datosOriginales);
-      toast.success('¡Cálculo exitoso!');
+      toast.success(`¡Muestra ${target} procesada con éxito!`);
     } catch (e) {
       setError(e.message);
       toast.error(e.message);
@@ -74,9 +82,11 @@ const AppContent = () => {
   const handleCargarHistorial = (datos) => {
     try {
       const res = servicios.obtenerResultados({ getDatos: () => datos });
-      setResultados(res);
+      setResultadosA(res);
+      setResultadosB(null);
+      setComparar(false);
       setModo('manual');
-      toast.success('Historial cargado');
+      toast.success('Análisis recuperado del historial');
       navigate('/calculos');
     } catch (e) {
       toast.error("Error al cargar historial");
@@ -86,9 +96,11 @@ const AppContent = () => {
   const handleClear = () => {
     repository.clear();
     setModo(null);
-    setResultados(null);
+    setResultadosA(null);
+    setResultadosB(null);
+    setComparar(false);
     setError(null);
-    toast('Sesión limpiada', { icon: '🧹' });
+    toast('Sesión reiniciada', { icon: '🧹' });
     navigate('/');
   };
 
@@ -132,11 +144,13 @@ const AppContent = () => {
         <Route path="/calculos" element={
           <CalculosPage 
             modo={modo}
-            resultados={resultados}
+            resultadosA={resultadosA}
+            resultadosB={resultadosB}
+            comparar={comparar}
             error={error}
-            onCalculate={handleCalculateManual}
+            onCalculate={(cadena, target) => handleCalculateManual(cadena, target)}
             onClearError={() => setError(null)}
-            onRandom={() => handleOptionSelect('random')}
+            onRandom={(target) => handleOptionSelect('random', target)}
             onClear={handleClear}
           />
         } />

@@ -6,17 +6,15 @@ import StartButton from '../componentes/StartButton';
 import Dock from '../componentes/Dock';
 
 const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
-  const [showDock, setShowDock] = useState(false);
-
   const dockItems = [
     { 
       icon: <VscArchive size={24} />, 
-      label: 'Ingresar cadena', 
+      label: 'Entrada Manual', 
       onClick: () => onOptionSelect('manual') 
     },
     { 
       icon: <VscSettingsGear size={24} />, 
-      label: 'Generar aleatorios', 
+      label: 'Datos Aleatorios', 
       onClick: () => onOptionSelect('random') 
     },
   ];
@@ -63,33 +61,28 @@ const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
             transition={{ delay: 0.6 }}
             style={{ fontSize: 'clamp(1rem, 4vw, 1.4rem)', color: 'var(--color-gray)', margin: '1rem 0 2rem' }}
           >
-            Analiza tus datos de forma profesional.
+            Selecciona un método para comenzar el análisis profesional.
           </motion.p>
 
-          {!showDock ? (
-            <div className="start-btn-container" style={{ marginBottom: '2rem' }}>
-              <StartButton onClick={() => setShowDock(true)} />
-            </div>
-          ) : (
-            <motion.div 
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 15 }}
-              style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}
-            >
-              <Dock 
-                items={dockItems}
-                panelHeight={window.innerWidth < 768 ? 60 : 80}
-                baseItemSize={window.innerWidth < 768 ? 50 : 65}
-                magnification={window.innerWidth < 768 ? 80 : 100}
-              />
-            </motion.div>
-          )}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}
+          >
+            <Dock 
+              items={dockItems}
+              panelHeight={window.innerWidth < 768 ? 70 : 90}
+              baseItemSize={window.innerWidth < 768 ? 55 : 75}
+              magnification={window.innerWidth < 768 ? 90 : 110}
+            />
+          </motion.div>
 
           {historial.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
               className="recent-history glass"
               style={{
                 marginTop: '2rem',
