@@ -1,55 +1,59 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Tooltip } from 'react-tooltip';
+import { VscInfo } from 'react-icons/vsc';
+import ExplicacionProcedimiento from '../componentes/ExplicacionProcedimiento';
+import 'react-tooltip/dist/react-tooltip.css';
+
+const arbolInfo = {
+  'main': {
+    titulo: "Análisis Multietapa",
+    formula: "S = {e₁, e₂, ...}",
+    desc: "Método gráfico para representar todos los eventos posibles de un experimento aleatorio que tiene varios pasos."
+  },
+  'multiplicativa': { 
+    titulo: "Regla Multiplicativa", 
+    formula: "N = n₁ × n₂ × ... × nₖ", 
+    desc: "El total de combinaciones es el producto de las opciones de cada etapa." 
+  }
+};
 
 const ArbolPage = () => {
-  const [pasos, setPasos] = useState([
+  const [pasosData, setPasosData] = useState([
     { nombre: 'Camiseta', opciones: ['Roja', 'Azul', 'Verde'] },
     { nombre: 'Pantalón', opciones: ['Jeans', 'Short'] },
     { nombre: 'Zapato', opciones: ['Tenis', 'Botas'] }
   ]);
 
-  const addPaso = () => {
-    if (pasos.length < 4) {
-      setPasos([...pasos, { nombre: `Paso ${pasos.length + 1}`, opciones: [] }]);
-    }
-  };
-
   const updatePaso = (index, field, value) => {
-    const updated = [...pasos];
-    if (field === 'opciones') {
-      updated[index][field] = value.split(',').map(o => o.trim()).filter(o => o !== '');
-    } else {
-      updated[index][field] = value;
-    }
-    setPasos(updated);
+    const updated = [...pasosData];
+    if (field === 'opciones') updated[index][field] = value.split(',').map(o => o.trim()).filter(o => o !== '');
+    else updated[index][field] = value;
+    setPasosData(updated);
   };
 
-  const removePaso = (index) => {
-    if (pasos.length > 2) {
-      setPasos(pasos.filter((_, i) => i !== index));
-    }
-  };
+  const total = pasosData.reduce((acc, p) => acc * (p.opciones.length || 0), 1);
 
-  const totalCombinaciones = pasos.reduce((acc, p) => acc * (p.opciones.length || 0), 1);
+  const pasosExplicacion = [
+    { titulo: "Principio de Conteo", desc: "La regla multiplicativa nos dice que si un evento ocurre en varias etapas, el número total de formas es el producto de las opciones de cada etapa." },
+    { titulo: "Diagrama de Árbol", desc: "Es una representación gráfica que permite visualizar todas las rutas posibles. Cada ramificación representa una opción disponible." },
+    { titulo: "Espacio Muestral", desc: `En este caso, tienes ${pasosData.length} etapas que generan un total de ${total} combinaciones únicas posibles.` }
+  ];
 
   const generateTree = () => {
     let output = "Inicio\n";
     const buildTree = (pIndex, indent = "") => {
-      if (pIndex >= pasos.length) return "";
-      const currentPaso = pasos[pIndex];
+      if (pIndex >= pasosData.length) return "";
+      const currentPaso = pasosData[pIndex];
       let str = "";
       currentPaso.opciones.forEach((op, idx) => {
         const isLast = idx === currentPaso.opciones.length - 1;
         const branch = isLast ? " └─ " : " ├─ ";
         str += `${indent}${branch}${op}`;
-        
-        if (pIndex < pasos.length - 1) {
+        if (pIndex < pasosData.length - 1) {
           const nextPasosOp = buildTree(pIndex + 1, indent + (isLast ? "    " : " │  "));
           str += `\n${nextPasosOp}`;
-        } else {
-          str += "\n";
-        
-        }
+        } else str += "\n";
       });
       return str;
     };
@@ -57,73 +61,47 @@ const ArbolPage = () => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="calculos-page"
-    >
-      <div className="results-header" style={{ marginBottom: '2rem' }}>
-        <h2>Regla Multiplicativa y Diagrama de Árbol</h2>
-        <p>Configura los pasos y opciones para visualizar el árbol de decisiones.</p>
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="calculos-page" style={{ paddingTop: '100px' }}>
+      <div className="results-header" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <h2>Diagrama de Árbol</h2>
+        <span data-tooltip-id="tree-tooltip" data-tooltip-content="main" style={{ cursor: 'help' }}>
+          <VscInfo size={24} style={{ color: 'var(--color-sky)' }} />
+        </span>
       </div>
 
       <div className="results-flex" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
         <div className="results-section table-section" style={{ flex: '1 1 300px' }}>
           <h3>Pasos de la Decisión</h3>
-          {pasos.map((p, i) => (
+          {pasosData.map((p, i) => (
             <div key={i} className="stat-card" style={{ marginBottom: '1rem', alignItems: 'flex-start', padding: '1rem' }}>
-              <input 
-                className="input" 
-                style={{ marginBottom: '0.5rem', fontSize: '1rem', padding: '10px' }}
-                value={p.nombre} 
-                onChange={(e) => updatePaso(i, 'nombre', e.target.value)}
-              />
-              <input 
-                className="input" 
-                style={{ fontSize: '0.9rem', padding: '8px' }}
-                placeholder="Opciones (separadas por coma)" 
-                value={p.opciones.join(', ')} 
-                onChange={(e) => updatePaso(i, 'opciones', e.target.value)}
-              />
-              {pasos.length > 2 && (
-                <button 
-                  onClick={() => removePaso(i)} 
-                  style={{ background: 'var(--color-red)', border: 'none', color: 'white', padding: '4px 8px', borderRadius: '4px', marginTop: '5px', cursor: 'pointer', fontSize: '0.8rem' }}
-                >
-                  Eliminar paso
-                </button>
-              )}
+              <input className="input" style={{ marginBottom: '0.5rem' }} value={p.nombre} onChange={(e) => updatePaso(i, 'nombre', e.target.value)} />
+              <input className="input" placeholder="Opciones..." value={p.opciones.join(', ')} onChange={(e) => updatePaso(i, 'opciones', e.target.value)} />
             </div>
           ))}
-          {pasos.length < 4 && (
-            <button className="send-button" onClick={addPaso} style={{ width: '100%', borderRadius: '8px', marginTop: '1rem' }}>
-              Agregar Paso
-            </button>
-          )}
-
-          <div className="stat-card" style={{ marginTop: '2rem', background: 'var(--color-blue)' }}>
-            <span className="stat-label" style={{ color: 'white' }}>Total de Combinaciones</span>
-            <span className="stat-value" style={{ color: 'var(--color-lime)', fontSize: '2rem' }}>{totalCombinaciones}</span>
+          
+          <div className="stat-card" data-tooltip-id="tree-tooltip" data-tooltip-content="multiplicativa" style={{ marginTop: '2rem', background: 'var(--color-blue)', cursor: 'help' }}>
+            <span className="stat-label" style={{ color: 'white' }}>Total Combinaciones <VscInfo size={14} /></span>
+            <span className="stat-value" style={{ color: 'var(--color-lime)', fontSize: '2rem' }}>{total}</span>
           </div>
         </div>
 
         <div className="results-section charts-section" style={{ flex: '2 1 450px' }}>
-          <h3>Visualización (Diagrama de Árbol)</h3>
-          <pre style={{ 
-            background: 'rgba(0,0,0,0.5)', 
-            padding: '2rem', 
-            borderRadius: '12px', 
-            fontFamily: 'monospace', 
-            color: 'var(--color-sky)',
-            border: '1px solid #444',
-            fontSize: '1.1rem',
-            overflow: 'auto',
-            maxHeight: '600px'
-          }}>
-            {generateTree()}
-          </pre>
+          <h3>Visualización</h3>
+          <pre style={{ background: 'rgba(0,0,0,0.5)', padding: '2rem', borderRadius: '12px', fontFamily: 'monospace', color: 'var(--color-sky)', border: '1px solid #444', overflow: 'auto', maxHeight: '600px' }}>{generateTree()}</pre>
         </div>
       </div>
+
+      <ExplicacionProcedimiento pasos={pasosExplicacion} />
+
+      <Tooltip id="tree-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+        render={({ content }) => (
+          <div style={{ textAlign: 'left', padding: '10px', maxWidth: '250px' }}>
+            <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{arbolInfo[content]?.titulo}</strong>
+            <p style={{ margin: '8px 0', fontSize: '1.1rem', color: 'var(--color-sky)' }}>{arbolInfo[content]?.formula}</p>
+            <small style={{ color: '#aaa' }}>{arbolInfo[content]?.desc}</small>
+          </div>
+        )}
+      />
     </motion.div>
   );
 };

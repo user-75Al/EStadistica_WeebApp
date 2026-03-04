@@ -1,7 +1,7 @@
 :root {
-  --color-red: #DE443B;
-  --color-blue: #006BB4;
   --color-dark: #162325;
+  --color-blue: #006BB4;
+  --color-red: #DE443B;
   --color-sky: #b1dae7;
   --color-lime: #caf438;
   --color-white: #ffffff;
@@ -15,162 +15,25 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-  background-color: var(--color-dark); /* Color base para evitar destellos blancos */
-}
-
 body {
-  font-family: var(--font-main), sans-serif;
+  font-family: var(--font-main), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   color: var(--color-white);
   overflow-x: hidden;
-  background-color: transparent !important; /* IMPORTANTE: Permitir que Balatro se vea */
-}
-
-#root {
+  background-color: var(--color-dark);
+  background: radial-gradient(circle at center, #1a2f33 0%, #060010 100%);
+  background-attachment: fixed;
   min-height: 100vh;
-  background-color: transparent;
 }
 
 .app-layout {
   min-height: 100vh;
-  position: relative;
-  background-color: transparent;
+  width: 100%;
 }
 
 .main-content {
   position: relative;
   z-index: 1;
-  background-color: transparent;
-}
-
-/* Home Styling */
-.home-container {
-  background-color: transparent !important;
-}
-
-.text-title {
-  font-size: clamp(3rem, 10vw, 5rem);
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
-
-/* Cards & Sections */
-.stat-card, .chart-card, .results-header, .form-container {
-  background: rgba(22, 35, 37, 0.7);
-  border-radius: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 2rem;
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--color-blue);
-}
-
-/* Scroll Section */
-.conceptos-scroll section {
-  background-color: transparent !important;
-}
-
-.conceptos-scroll img {
-  max-width: 100%;
-  border-radius: 30px;
-}
-
-/* Input Form */
-.form .input {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.2rem;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1.5rem;
-}
-
-.form .input:focus {
-  border-color: var(--color-lime);
-  outline: none;
-}
-
-.send-button {
-  background: var(--color-blue);
-  border-radius: 15px;
-  padding: 1.2rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.send-button:hover {
-  background: var(--color-sky);
-  color: var(--color-blue);
-}
-
-/* Responsividad para imágenes en móviles */
-@media screen and (max-width: 768px) {
-  
-  /* 1. Eliminar la imagen 7 (Divider Negro) */
-  .conceptos-scroll section:nth-of-type(6) {
-    display: none !important;
-  }
-
-  /* 2. Preparar el contenedor para el apilado */
-  .conceptos-scroll section:not([style*="height: 50vh"]) {
-    height: auto !important;
-    min-height: 100vh !important;
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 0 !important;
-    background: #000 !important;
-  }
-
-  /* Ocultar la etiqueta img original en móvil */
-  .conceptos-scroll section:not([style*="height: 50vh"]) img {
-    display: none !important;
-  }
-
-  /* 3. Crear las dos mitades (superior e inferior) */
-  .conceptos-scroll section:not([style*="height: 50vh"])::before,
-  .conceptos-scroll section:not([style*="height: 50vh"])::after {
-    content: "";
-    display: block;
-    width: 100vw;
-    height: 50vh; 
-    background-repeat: no-repeat;
-    background-size: 200% auto; 
-    background-position: center;
-  }
-
-  .conceptos-scroll section:not([style*="height: 50vh"])::before {
-    background-position: left center;
-  }
-
-  .conceptos-scroll section:not([style*="height: 50vh"])::after {
-    background-position: right center;
-  }
-
-  /* 4. Asignación de rutas */
-  .conceptos-scroll section:nth-of-type(1)::before, 
-  .conceptos-scroll section:nth-of-type(1)::after { background-image: url('../../../public/assets/img1.png'); }
-  
-  .conceptos-scroll section:nth-of-type(3)::before, 
-  .conceptos-scroll section:nth-of-type(3)::after { background-image: url('../../../public/assets/img2.png'); }
-  
-  .conceptos-scroll section:nth-of-type(5)::before, 
-  .conceptos-scroll section:nth-of-type(5)::after { background-image: url('../../../public/assets/img3.png'); }
-  
-  .conceptos-scroll section:nth-of-type(7)::before, 
-  .conceptos-scroll section:nth-of-type(7)::after { background-image: url('../../../public/assets/img4.png'); }
-  
-  .conceptos-scroll section:nth-of-type(9)::before, 
-  .conceptos-scroll section:nth-of-type(9)::after { background-image: url('../../../public/assets/img5.png'); }
-
-  /* Ajustar los divisores restantes */
-  .conceptos-scroll section[style*="height: 50vh"] {
-    height: 15vh !important;
-    min-height: 10vh !important;
-    padding: 0 !important;
-  }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

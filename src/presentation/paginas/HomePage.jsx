@@ -44,9 +44,9 @@ const HomePage = ({ onOptionSelect }) => {
   };
 
   return (
-    <div className="home-container" style={{ width: '100vw', overflowX: 'hidden', margin: 0, padding: 0, background: '#000000' }}>
+    <div className="home-container" style={{ width: '100vw', overflowX: 'hidden', margin: 0, padding: 0, background: 'transparent' }}>
       
-      {/* SECCIÓN PRINCIPAL (HERO) */}
+      {/* SECCIÓN PRINCIPAL (HERO) - Aquí brilla el fondo Balatro */}
       <section id="top" style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: 'transparent' }}>
         <div style={{ zIndex: 2 }}>
           <BlurText
@@ -88,7 +88,7 @@ const HomePage = ({ onOptionSelect }) => {
         </div>
       </section>
 
-      {/* SECCIONES DE IMÁGENES INTERCALADAS */}
+      {/* SECCIONES DE IMÁGENES INTERCALADAS - Mantenemos el negro aquí para que las imágenes resalten */}
       <div className="conceptos-scroll" style={{ position: 'relative', zIndex: 10, width: '100vw', background: '#000000' }}>
         {listaFinal.map((item, idx) => (
           <section 
@@ -123,7 +123,7 @@ const HomePage = ({ onOptionSelect }) => {
               }} 
             />
 
-            {/* BOTÓN VOLVER ARRIBA - Solo al final de la última imagen */}
+            {/* BOTÓN VOLVER ARRIBA */}
             {idx === listaFinal.length - 1 && (
               <motion.button
                 onClick={scrollToTop}

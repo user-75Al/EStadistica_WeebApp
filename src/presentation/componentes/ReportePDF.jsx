@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 7, color: '#666', textTransform: 'uppercase' },
   statValue: { fontSize: 10, fontWeight: 'bold', color: '#1E3A5F' },
   probContainer: { backgroundColor: '#f0f7ff', padding: 10, borderRadius: 6, borderWidth: 0.5, borderStyle: 'solid', borderColor: '#bcd7f3' },
+  diagContainer: { backgroundColor: '#fff9f0', padding: 10, borderRadius: 6, borderWidth: 0.5, borderStyle: 'solid', borderColor: '#ffe4bc', marginTop: 8 },
   monoText: { fontFamily: 'Courier', fontSize: 8, color: '#444', backgroundColor: '#fff', padding: 6, marginTop: 4, borderRadius: 4, borderWidth: 0.5, borderStyle: 'solid', borderColor: '#ddd' },
   table: { display: 'table', width: '100%' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomStyle: 'solid', borderBottomColor: '#eee', minHeight: 18, alignItems: 'center' },
@@ -60,7 +61,7 @@ const ReportePDF = ({ datos, estadisticos, frecuencias, graficosImgs, probabilid
       <Page size="A4" style={styles.page}>
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Reporte de Análisis Estadístico</Text>
-          <Text style={styles.subtitle}>Medidas de tendencia, dispersión y probabilidad</Text>
+          <Text style={styles.subtitle}>Medidas de tendencia, dispersión y diagnóstico de calidad</Text>
           <Text style={{ fontSize: 8, color: '#888', marginTop: 4 }}>Emisión: {fecha} | n = {datos.length}</Text>
         </View>
         
@@ -71,28 +72,39 @@ const ReportePDF = ({ datos, estadisticos, frecuencias, graficosImgs, probabilid
             <View style={styles.statCard}><Text style={styles.statLabel}>Mediana</Text><Text style={styles.statValue}>{estadisticos.mediana}</Text></View>
             <View style={styles.statCard}><Text style={styles.statLabel}>Moda</Text><Text style={styles.statValue}>{estadisticos.moda}</Text></View>
             <View style={styles.statCard}><Text style={styles.statLabel}>Rango</Text><Text style={styles.statValue}>{estadisticos.rango}</Text></View>
-            <View style={styles.statCard}><Text style={styles.statLabel}>Mínimo</Text><Text style={styles.statValue}>{estadisticos.min}</Text></View>
-            <View style={styles.statCard}><Text style={styles.statLabel}>Máximo</Text><Text style={styles.statValue}>{estadisticos.max}</Text></View>
             <View style={styles.statCard}><Text style={styles.statLabel}>Varianza</Text><Text style={styles.statValue}>{estadisticos.varianza}</Text></View>
             <View style={styles.statCard}><Text style={styles.statLabel}>Desviación</Text><Text style={styles.statValue}>{estadisticos.desviacion}</Text></View>
+            <View style={styles.statCard}><Text style={styles.statLabel}>Q1 (25%)</Text><Text style={styles.statValue}>{estadisticos.q1}</Text></View>
+            <View style={styles.statCard}><Text style={styles.statLabel}>Q3 (75%)</Text><Text style={styles.statValue}>{estadisticos.q3}</Text></View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>2. Probabilidad y Muestra</Text>
-          <Text style={{ fontSize: 8, color: '#666', marginBottom: 2 }}>Espacio Muestral (S):</Text>
-          <Text style={styles.monoText}>S = {"{ "}{espacioMuestral.join(', ')}{" }"}</Text>
-          
-          {probabilidad && (
-            <View style={[styles.probContainer, { marginTop: 8 }]}>
-              <Text style={{ fontWeight: 'bold', color: '#1E3A5F', fontSize: 9 }}>Evento: {probabilidad.condicion}</Text>
-              <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginTop: 4 }}>P(E) = {probabilidad.porcentaje}% ({probabilidad.favorables}/{probabilidad.total})</Text>
-            </View>
-          )}
+          <Text style={styles.sectionTitle}>2. Diagnóstico de Consistencia</Text>
+          <View style={styles.diagContainer}>
+            <Text style={{ fontWeight: 'bold', color: '#855d10', fontSize: 9 }}>Resultado del Análisis:</Text>
+            <Text style={{ marginTop: 4, fontSize: 9 }}>Distribución: {estadisticos.sesgo}</Text>
+            <Text style={{ marginTop: 2, fontSize: 9, color: estadisticos.outliers.length > 0 ? '#DE443B' : '#333' }}>
+              Atípicos: {estadisticos.outliers.length > 0 ? `Se detectaron ${estadisticos.outliers.length} outliers: ${estadisticos.outliers.join(', ')}` : 'Muestra consistente, sin outliers detectados.'}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>3. Tabla de Frecuencias</Text>
+          <Text style={styles.sectionTitle}>3. Espacio Muestral y Probabilidad</Text>
+          <Text style={styles.monoText}>S = {"{ "}{espacioMuestral.join(', ')}{" }"}</Text>
+          {probabilidad && (
+            <View style={[styles.probContainer, { marginTop: 8 }]}>
+              <Text style={{ fontWeight: 'bold', color: '#1E3A5F', fontSize: 9 }}>Evento: {probabilidad.condicion}</Text>
+              <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginTop: 4 }}>P(E) = {probabilidad.porcentaje}%</Text>
+            </View>
+          )}
+        </View>
+      </Page>
+
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>4. Tabla de Distribución de Frecuencias</Text>
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}><Text>Valor</Text></View>
@@ -101,7 +113,7 @@ const ReportePDF = ({ datos, estadisticos, frecuencias, graficosImgs, probabilid
               <View style={styles.tableCol}><Text>Fi</Text></View>
               <View style={styles.tableCol}><Text>Fr</Text></View>
             </View>
-            {frecuencias.slice(0, 15).map((row, i) => (
+            {frecuencias.slice(0, 20).map((row, i) => (
               <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                 <View style={styles.tableCol}><Text>{row.valor}</Text></View>
                 <View style={styles.tableCol}><Text>{row.fi}</Text></View>
@@ -110,7 +122,6 @@ const ReportePDF = ({ datos, estadisticos, frecuencias, graficosImgs, probabilid
                 <View style={styles.tableCol}><Text>{row.Fr}</Text></View>
               </View>
             ))}
-            {frecuencias.length > 15 && <Text style={{ textAlign: 'center', fontSize: 7, marginTop: 2 }}>... Ver más en la web ...</Text>}
           </View>
         </View>
       </Page>

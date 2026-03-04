@@ -6,6 +6,8 @@ import CalculosPage from './presentation/paginas/CalculosPage';
 import ConjuntosPage from './presentation/paginas/ConjuntosPage';
 import ArbolPage from './presentation/paginas/ArbolPage';
 import PermutacionesPage from './presentation/paginas/PermutacionesPage';
+import DistribucionesPage from './presentation/paginas/DistribucionesPage';
+import RegresionPage from './presentation/paginas/RegresionPage';
 import PillNav from './presentation/componentes/PillNav';
 import ClearButton from './presentation/componentes/ClearButton';
 import { ServiciosEstadistica } from './application/implementaciones/ServiciosEstadistica';
@@ -22,7 +24,6 @@ const AppContent = () => {
   const repository = useMemo(() => new LocalDatosRepository(), []);
   const servicios = useMemo(() => new ServiciosEstadistica(repository), [repository]);
 
-  // Recuperar datos al cargar
   useEffect(() => {
     const datosGuardados = repository.get();
     if (datosGuardados) {
@@ -60,6 +61,9 @@ const AppContent = () => {
   };
 
   const navItems = [
+    { label: 'Regresión', href: '/regresion' },
+    { label: 'Distribuciones', href: '/distribuciones' },
+    { label: 'Cálculos', href: '/calculos' },
     { label: 'Conjuntos', href: '/conjuntos' },
     { label: 'Árbol', href: '/arbol' },
     { label: 'Permutaciones', href: '/permutaciones' },
@@ -77,7 +81,7 @@ const AppContent = () => {
           activeHref={location.pathname}
           baseColor="#fff"
           pillColor="#060010"
-          hoveredPillTextColor="#060010"
+          hoveredPillTextColor="#caf438"
         />
       </div>
 
@@ -94,19 +98,15 @@ const AppContent = () => {
             onClear={handleClear}
           />
         } />
+        <Route path="/regresion" element={<RegresionPage />} />
+        <Route path="/distribuciones" element={<DistribucionesPage />} />
         <Route path="/conjuntos" element={<ConjuntosPage />} />
         <Route path="/arbol" element={<ArbolPage />} />
         <Route path="/permutaciones" element={<PermutacionesPage />} />
       </Routes>
 
       {showClearButton && (
-        <div style={{ 
-          position: 'fixed', 
-          bottom: '2rem', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          zIndex: 1000 
-        }}>
+        <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
           <ClearButton onClick={handleClear} />
         </div>
       )}
