@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/EStadistica_WeebApp/static/css/main.8b87e282.css",
-    "main.js": "/EStadistica_WeebApp/static/js/main.8ebd12a2.js",
+    "main.css": "/EStadistica_WeebApp/static/css/main.64429d95.css",
+    "main.js": "/EStadistica_WeebApp/static/js/main.63923a39.js",
     "index.html": "/EStadistica_WeebApp/index.html",
-    "main.8b87e282.css.map": "/EStadistica_WeebApp/static/css/main.8b87e282.css.map",
-    "main.8ebd12a2.js.map": "/EStadistica_WeebApp/static/js/main.8ebd12a2.js.map"
+    "main.64429d95.css.map": "/EStadistica_WeebApp/static/css/main.64429d95.css.map",
+    "main.63923a39.js.map": "/EStadistica_WeebApp/static/js/main.63923a39.js.map"
   },
   "entrypoints": [
-    "static/css/main.8b87e282.css",
-    "static/js/main.8ebd12a2.js"
+    "static/css/main.64429d95.css",
+    "static/js/main.63923a39.js"
   ]
 }
