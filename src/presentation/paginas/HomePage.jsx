@@ -46,9 +46,9 @@ const HomePage = ({ onOptionSelect }) => {
   return (
     <div className="home-container" style={{ width: '100vw', overflowX: 'hidden', margin: 0, padding: 0, background: 'transparent' }}>
       
-      {/* SECCIÓN PRINCIPAL (HERO) - Aquí brilla el fondo Balatro */}
+      {/* SECCIÓN PRINCIPAL (HERO) */}
       <section id="top" style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: 'transparent' }}>
-        <div style={{ zIndex: 2 }}>
+        <div style={{ zIndex: 2, padding: '0 20px' }}>
           <BlurText
             text="Calculadora Estadística"
             delay={200}
@@ -61,7 +61,7 @@ const HomePage = ({ onOptionSelect }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            style={{ fontSize: '1.4rem', color: 'var(--color-gray)', margin: '1rem 0 2rem' }}
+            style={{ fontSize: 'clamp(1rem, 4vw, 1.4rem)', color: 'var(--color-gray)', margin: '1rem 0 2rem' }}
           >
             ¿Desea continuar?
           </motion.p>
@@ -79,29 +79,30 @@ const HomePage = ({ onOptionSelect }) => {
             >
               <Dock 
                 items={dockItems}
-                panelHeight={80}
-                baseItemSize={65}
-                magnification={100}
+                panelHeight={window.innerWidth < 768 ? 60 : 80}
+                baseItemSize={window.innerWidth < 768 ? 50 : 65}
+                magnification={window.innerWidth < 768 ? 80 : 100}
               />
             </motion.div>
           )}
         </div>
       </section>
 
-      {/* SECCIONES DE IMÁGENES INTERCALADAS - Mantenemos el negro aquí para que las imágenes resalten */}
+      {/* SECCIONES DE IMÁGENES INTERCALADAS - RESPONSIVO */}
       <div className="conceptos-scroll" style={{ position: 'relative', zIndex: 10, width: '100vw', background: '#000000' }}>
         {listaFinal.map((item, idx) => (
           <section 
             key={idx}
             style={{ 
-              height: item.type === 'divider' ? '50vh' : '100vh', 
+              height: item.type === 'divider' ? 'auto' : 'auto', 
+              minHeight: item.type === 'divider' ? '30vh' : '60vh',
               width: '100vw', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               overflow: 'hidden',
               margin: 0,
-              padding: 0,
+              padding: item.type === 'divider' ? '2rem 0' : '0',
               background: '#000000',
               position: 'relative'
             }}
@@ -115,9 +116,11 @@ const HomePage = ({ onOptionSelect }) => {
               viewport={{ once: true, amount: 0.2 }}
               style={{ 
                 width: '100%', 
-                height: '100%', 
+                height: 'auto', // Cambiado para que no se estire
+                maxWidth: '100%',
+                maxHeight: '100vh',
                 display: 'block', 
-                objectFit: 'cover', 
+                objectFit: 'contain', // Cambiado de cover a contain para móviles
                 margin: 0,
                 padding: 0
               }} 
@@ -131,8 +134,8 @@ const HomePage = ({ onOptionSelect }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 style={{
                   position: 'absolute',
-                  bottom: '3rem',
-                  padding: '1rem 2rem',
+                  bottom: '2rem',
+                  padding: '0.8rem 1.5rem',
                   background: 'var(--color-lime)',
                   color: '#000',
                   border: 'none',
@@ -143,10 +146,11 @@ const HomePage = ({ onOptionSelect }) => {
                   alignItems: 'center',
                   gap: '10px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                  zIndex: 20
+                  zIndex: 20,
+                  fontSize: '0.9rem'
                 }}
               >
-                <VscChevronUp size={24} />
+                <VscChevronUp size={20} />
                 VOLVER AL INICIO
               </motion.button>
             )}
