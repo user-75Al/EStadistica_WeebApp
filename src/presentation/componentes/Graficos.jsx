@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Modal from 'react-modal';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,11 +12,12 @@ import {
   Legend,
   ArcElement,
   BarController,
-  LineController
+  LineController,
 } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import { Chart, Bar, Line, Pie } from 'react-chartjs-2';
 import { Tooltip } from 'react-tooltip';
-import { VscInfo } from 'react-icons/vsc';
+import { VscInfo, VscScreenFull } from 'react-icons/vsc';
 import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
@@ -30,33 +32,16 @@ ChartJS.register(
   ArcElement,
   Title,
   ChartTooltip,
-  Legend
+  Legend,
+  annotationPlugin
 );
 
-const chartExplanations = {
-  'histograma': {
-    titulo: "Histograma y Polígono",
-    formula: "fᵢ vs xᵢ",
-    desc: "El histograma muestra la distribución de frecuencias absolutas. El polígono une los puntos medios para visualizar la tendencia de la distribución."
-  },
-  'ojiva': {
-    titulo: "Ojiva",
-    formula: "Fᵢ vs xᵢ",
-    desc: "Representa las frecuencias acumuladas. Es fundamental para determinar cuántos datos están por debajo de un valor específico (percentiles)."
-  },
-  'pareto': {
-    titulo: "Diagrama de Pareto",
-    formula: "80/20 Rule",
-    desc: "Muestra los valores ordenados por frecuencia descendente. Ayuda a identificar los pocos valores vitales que representan la mayor parte del total."
-  },
-  'pastel': {
-    titulo: "Gráfico de Pastel",
-    formula: "fᵣ * 360°",
-    desc: "Visualiza la proporción o porcentaje que cada valor representa respecto al total de la muestra."
-  }
-};
+Modal.setAppElement('#root');
 
-const Graficos = ({ frecuencias, datosOriginales }) => {
+const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) => {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [activeChart, setActiveChart] = useState(null);
+
   const labels = frecuencias.map(f => f.valor);
   const fiData = frecuencias.map(f => f.fi);
   const FiData = frecuencias.map(f => f.Fi);
@@ -75,6 +60,13 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    onHover: (event, chartElement) => {
+      if (chartElement.length > 0 && onHoverIndex) {
+        onHoverIndex(chartElement[0].index);
+      } else if (onHoverIndex) {
+        onHoverIndex(null);
+      }
+    },
     plugins: {
       legend: { labels: { color: '#fff', font: { size: 10 } } },
     },
@@ -84,14 +76,26 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
     }
   };
 
+  const getGradient = (ctx, chartArea) => {
+    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+    gradient.addColorStop(0, '#006BB4');
+    gradient.addColorStop(1, '#caf438');
+    return gradient;
+  };
+
   const histogramaData = {
     labels,
     datasets: [
       {
         label: 'fi (Frecuencia Absoluta)',
         data: fiData,
-        backgroundColor: '#006BB4',
-        borderColor: '#DE443B',
+        backgroundColor: (context) => {
+          const chart = context.chart;
+          const {ctx, chartArea} = chart;
+          if (!chartArea) return '#006BB4';
+          return getGradient(ctx, chartArea);
+        },
+        borderColor: '#caf438',
         borderWidth: 1,
       },
       {
@@ -106,127 +110,99 @@ const Graficos = ({ frecuencias, datosOriginales }) => {
     ]
   };
 
-  const ojivaData = {
-    labels,
-    datasets: [{
-      label: 'Fi (Frecuencia Acumulada)',
-      data: FiData,
-      borderColor: '#DE443B',
-      backgroundColor: '#DE443B',
-      fill: false,
-      tension: 0.1,
-    }]
-  };
-
-  const paretoChartData = {
-    labels: paretoLabels,
-    datasets: [
-      {
-        type: 'bar',
-        label: 'fi',
-        data: paretoFi,
-        backgroundColor: '#006BB4',
-        yAxisID: 'y',
-      },
-      {
-        type: 'line',
-        label: '% Acumulado',
-        data: paretoPercent,
-        borderColor: '#DE443B',
-        backgroundColor: '#DE443B',
-        yAxisID: 'y1',
-        tension: 0.4,
+  const annotationOptions = {
+    plugins: {
+      annotation: {
+        annotations: {
+          lineMedia: {
+            type: 'line',
+            xMin: labels.indexOf(Number(estadisticos?.media)),
+            xMax: labels.indexOf(Number(estadisticos?.media)),
+            borderColor: 'rgb(255, 99, 132)',
+            borderWidth: 2,
+            label: {
+              display: true,
+              content: 'Media',
+              position: 'start'
+            }
+          },
+          lineModa: {
+            type: 'line',
+            xMin: labels.indexOf(Number(Array.isArray(estadisticos?.moda) ? estadisticos.moda[0] : estadisticos?.moda)),
+            xMax: labels.indexOf(Number(Array.isArray(estadisticos?.moda) ? estadisticos.moda[0] : estadisticos?.moda)),
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            label: {
+              display: true,
+              content: 'Moda',
+              position: 'end'
+            }
+          }
+        }
       }
-    ]
+    }
   };
 
-  const pieData = {
-    labels: labels.slice(0, 5),
-    datasets: [{
-      data: fiData.slice(0, 5),
-      backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'],
-    }]
+  const openModal = (chartType) => {
+    setActiveChart(chartType);
+    setModalIsOpen(true);
+  };
+
+  const renderChart = (type, isModal = false) => {
+    const options = isModal ? { ...commonOptions, maintainAspectRatio: true } : commonOptions;
+    switch(type) {
+      case 'histograma': return <Chart type='bar' data={histogramaData} options={{...options, ...annotationOptions}} />;
+      case 'ojiva': return <Line data={{ labels, datasets: [{ label: 'Fi', data: FiData, borderColor: '#DE443B', backgroundColor: '#DE443B', tension: 0.1 }] }} options={options} />;
+      case 'pareto': return <Chart type='bar' data={{ labels: paretoLabels, datasets: [{ type: 'bar', label: 'fi', data: paretoFi, backgroundColor: '#006BB4', yAxisID: 'y' }, { type: 'line', label: '% Acum', data: paretoPercent, borderColor: '#DE443B', yAxisID: 'y1' }] }} options={{...options, scales: {...options.scales, y1: { position: 'right', min: 0, max: 100, ticks: { color: '#DE443B' }, grid: { display: false } }}}} />;
+      case 'pie': return <Pie data={{ labels: labels.slice(0, 5), datasets: [{ data: fiData.slice(0, 5), backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'] }] }} options={{...options, scales: {}}} />;
+      default: return null;
+    }
   };
 
   return (
     <div className="graficos-container">
-      <div className="chart-card">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          Histograma y Polígono 
-          <span data-tooltip-id="chart-tooltip" data-tooltip-content="histograma" style={{ cursor: 'help' }}>
-            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
-          </span>
-        </h3>
-        <div className="chart-box">
-          <Chart type='bar' data={histogramaData} options={commonOptions} />
-        </div>
-      </div>
-      
-      <div className="chart-card">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          Ojiva (Frecuencia Acumulada)
-          <span data-tooltip-id="chart-tooltip" data-tooltip-content="ojiva" style={{ cursor: 'help' }}>
-            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
-          </span>
-        </h3>
-        <div className="chart-box">
-          <Line data={ojivaData} options={commonOptions} />
-        </div>
-      </div>
-
-      <div className="chart-card">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          Diagrama de Pareto
-          <span data-tooltip-id="chart-tooltip" data-tooltip-content="pareto" style={{ cursor: 'help' }}>
-            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
-          </span>
-        </h3>
-        <div className="chart-box">
-          <Chart type='bar' data={paretoChartData} options={{
-            ...commonOptions,
-            scales: {
-              ...commonOptions.scales,
-              y1: {
-                position: 'right',
-                min: 0,
-                max: 100,
-                ticks: { color: '#DE443B' },
-                grid: { display: false }
-              }
-            }
-          }} />
-        </div>
-      </div>
-
-      <div className="chart-card">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          Distribución (Top 5)
-          <span data-tooltip-id="chart-tooltip" data-tooltip-content="pastel" style={{ cursor: 'help' }}>
-            <VscInfo size={16} style={{ color: 'var(--color-sky)' }} />
-          </span>
-        </h3>
-        <div className="chart-box">
-          <Pie data={pieData} options={{ ...commonOptions, scales: {} }} />
-        </div>
-      </div>
-
-      <Tooltip 
-        id="chart-tooltip" 
-        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100, maxWidth: '280px' }}
-        render={({ content }) => (
-          <div style={{ textAlign: 'left', padding: '10px' }}>
-            <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>
-              {chartExplanations[content]?.titulo}
-            </strong>
-            <p style={{ margin: '8px 0', fontSize: '1.1rem', color: 'var(--color-sky)', fontWeight: 'bold' }}>
-              {chartExplanations[content]?.formula}
-            </p>
-            <small style={{ color: '#aaa', lineHeight: '1.4' }}>
-              {chartExplanations[content]?.desc}
-            </small>
+      {[
+        { id: 'histograma', title: 'Histograma y Polígono' },
+        { id: 'ojiva', title: 'Ojiva (Frecuencia Acumulada)' },
+        { id: 'pareto', title: 'Diagrama de Pareto' },
+        { id: 'pie', title: 'Distribución (Top 5)' }
+      ].map(chart => (
+        <div key={chart.id} className="chart-card glass">
+          <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {chart.title}
+              <VscInfo size={16} style={{ color: 'var(--color-sky)', cursor: 'help' }} data-tooltip-id="chart-tooltip" data-tooltip-content={chart.id} />
+            </span>
+            <VscScreenFull 
+              size={18} 
+              style={{ cursor: 'pointer', color: 'var(--color-lime)' }} 
+              onClick={() => openModal(chart.id)}
+            />
+          </h3>
+          <div className="chart-box">
+            {renderChart(chart.id)}
           </div>
-        )}
-      />
+        </div>
+      ))}
+
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => setModalIsOpen(false)}
+        style={{
+          overlay: { backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 2000 },
+          content: { background: '#060010', border: '1px solid var(--color-lime)', borderRadius: '20px', padding: '40px' }
+        }}
+      >
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <button onClick={() => setModalIsOpen(false)} style={{ alignSelf: 'flex-end', background: 'var(--color-lime)', border: 'none', padding: '10px 20px', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '20px' }}>Cerrar</button>
+          <div style={{ flex: 1 }}>
+            {renderChart(activeChart, true)}
+          </div>
+        </div>
+      </Modal>
+
+      <Tooltip id="chart-tooltip" />
     </div>
   );
 };

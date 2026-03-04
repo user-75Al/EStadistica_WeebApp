@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tooltip } from 'react-tooltip';
-import { VscInfo } from 'react-icons/vsc';
+import { VscInfo, VscCopy } from 'react-icons/vsc';
+import { toast } from 'react-hot-toast';
 import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
@@ -32,9 +33,32 @@ const tablaFormulas = {
   }
 };
 
-const TablaFrecuencias = ({ frecuencias }) => {
+const TablaFrecuencias = ({ frecuencias, hoverIndex }) => {
+  const copiarTabla = () => {
+    const headers = 'Valor,fi,fr,Fi,Fr';
+    const rows = frecuencias.map(f => `${f.valor},${f.fi},${f.fr},${f.Fi},${f.Fr}`).join('\n');
+    navigator.clipboard.writeText(`${headers}\n${rows}`);
+    toast.success('Tabla de frecuencias copiada al portapapeles');
+  };
+
   return (
-    <div className="table-wrapper">
+    <div className="table-wrapper glass" style={{ position: 'relative' }}>
+      <button 
+        onClick={copiarTabla}
+        className="copy-button-mini"
+        title="Copiar tabla como CSV"
+        style={{
+          position: 'absolute', top: '-45px', right: '0',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          color: '#888', padding: '5px 12px', borderRadius: '8px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+          fontSize: '0.8rem', transition: 'all 0.3s ease',
+          backdropFilter: 'blur(5px)', zIndex: 10
+        }}
+      >
+        <VscCopy /> Copiar Tabla CSV
+      </button>
+
       <table className="frecuencias-table">
         <thead>
           <tr>
@@ -57,7 +81,13 @@ const TablaFrecuencias = ({ frecuencias }) => {
         </thead>
         <tbody>
           {frecuencias.map((fila, index) => (
-            <tr key={index}>
+            <tr 
+              key={index}
+              style={{
+                backgroundColor: hoverIndex === index ? 'rgba(202, 244, 56, 0.15)' : 'transparent',
+                transition: 'background-color 0.2s ease'
+              }}
+            >
               <td>{fila.valor}</td>
               <td>{fila.fi}</td>
               <td>{fila.fr}</td>

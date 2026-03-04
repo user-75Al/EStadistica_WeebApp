@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:slnt,wght@0,100..900;1,-10..0&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+
 :root {
   --color-dark: #162325;
   --color-blue: #006BB4;
@@ -6,7 +9,8 @@
   --color-lime: #caf438;
   --color-white: #ffffff;
   --color-gray: #87a4b6;
-  --font-main: 'Ubuntu', sans-serif;
+  --font-main: 'Inter', 'Ubuntu', sans-serif;
+  --font-mono: 'Fira Code', monospace;
 }
 
 * {
@@ -23,6 +27,51 @@ body {
   background: radial-gradient(circle at center, #1a2f33 0%, #060010 100%);
   background-attachment: fixed;
   min-height: 100vh;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Glassmorphism Effect */
+.glass {
+  background: rgba(22, 35, 37, 0.4) !important;
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Sincronización Gráficos-Tabla */
+.row-highlight {
+  background-color: rgba(202, 244, 56, 0.15) !important;
+  border-left: 4px solid var(--color-lime);
+  transition: all 0.2s ease;
+}
+
+/* Botones de Copia Mini */
+.copy-button-mini {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-gray);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(5px);
+}
+
+.copy-button-mini:hover {
+  background: rgba(202, 244, 56, 0.1);
+  border-color: var(--color-lime);
+  color: var(--color-lime);
+  transform: translateY(-2px);
 }
 
 .app-layout {

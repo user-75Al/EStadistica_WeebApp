@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tooltip } from 'react-tooltip';
-import { VscInfo } from 'react-icons/vsc';
+import { VscInfo, VscCopy } from 'react-icons/vsc';
+import { toast } from 'react-hot-toast';
 import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
@@ -59,34 +60,58 @@ const StatsGrid = ({ estadisticos }) => {
     { label: 'Desviación', value: estadisticos.desviacion },
   ];
 
+  const copiarEstadisticos = () => {
+    const csv = items.map(i => `${i.label},${i.value}`).join('\n');
+    navigator.clipboard.writeText(csv);
+    toast.success('Estadísticos copiados al portapapeles');
+  };
+
   return (
-    <div className="stats-grid">
-      {items.map((item, index) => (
-        <div 
-          key={index} 
-          className="stat-card"
-          data-tooltip-id="formula-tooltip"
-          data-tooltip-content={item.label}
-          style={{ cursor: 'help' }}
-        >
-          <span className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            {item.label} <VscInfo size={14} style={{ color: 'var(--color-sky)', opacity: 0.8 }} />
-          </span>
-          <span className="stat-value">{item.value}</span>
-        </div>
-      ))}
-      
-      <Tooltip 
-        id="formula-tooltip" 
-        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
-        render={({ content }) => (
-          <div style={{ textAlign: 'left', padding: '10px', maxWidth: '280px' }}>
-            <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{formulasInfo[content]?.titulo}</strong>
-            <p style={{ margin: '8px 0', fontSize: '1.1rem', color: 'var(--color-sky)' }}>{formulasInfo[content]?.formula}</p>
-            <small style={{ color: '#aaa' }}>{formulasInfo[content]?.desc}</small>
+    <div style={{ position: 'relative' }}>
+      <button 
+        onClick={copiarEstadisticos}
+        className="copy-button-mini"
+        title="Copiar como CSV"
+        style={{
+          position: 'absolute', top: '-45px', right: '0',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          color: '#888', padding: '5px 12px', borderRadius: '8px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+          fontSize: '0.8rem', transition: 'all 0.3s ease',
+          backdropFilter: 'blur(5px)'
+        }}
+      >
+        <VscCopy /> Copiar CSV
+      </button>
+
+      <div className="stats-grid">
+        {items.map((item, index) => (
+          <div 
+            key={index} 
+            className="stat-card glass"
+            data-tooltip-id="formula-tooltip"
+            data-tooltip-content={item.label}
+            style={{ cursor: 'help' }}
+          >
+            <span className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              {item.label} <VscInfo size={14} style={{ color: 'var(--color-sky)', opacity: 0.8 }} />
+            </span>
+            <span className="stat-value">{item.value}</span>
           </div>
-        )}
-      />
+        ))}
+        
+        <Tooltip 
+          id="formula-tooltip" 
+          style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+          render={({ content }) => (
+            <div style={{ textAlign: 'left', padding: '10px', maxWidth: '280px' }}>
+              <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{formulasInfo[content]?.titulo}</strong>
+              <p style={{ margin: '8px 0', fontSize: '1.1rem', color: 'var(--color-sky)' }}>{formulasInfo[content]?.formula}</p>
+              <small style={{ color: '#aaa' }}>{formulasInfo[content]?.desc}</small>
+            </div>
+          )}
+        />
+      </div>
     </div>
   );
 };
