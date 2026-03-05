@@ -54,6 +54,11 @@ const chartExplanations = {
     formula: "Regla 80/20",
     desc: "Ordena los valores por frecuencia descendente para identificar los elementos más significativos de la muestra."
   },
+  'boxplot': {
+    titulo: "Caja y Bigotes (Boxplot)",
+    formula: "Q1, Q2, Q3",
+    desc: "Visualiza la dispersión y los cuartiles de la muestra. La caja representa el 50% central de los datos (IQR)."
+  },
   'pie': {
     titulo: "Distribución Top 5",
     formula: "fᵣ * 360°",
@@ -155,6 +160,17 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
       case 'histograma': return <Chart type='bar' data={histogramaData} options={{...options, ...annotationOptions}} />;
       case 'ojiva': return <Line data={{ labels, datasets: [{ label: 'Fi', data: FiData, borderColor: '#DE443B', backgroundColor: '#DE443B', tension: 0.1 }] }} options={options} />;
       case 'pareto': return <Chart type='bar' data={{ labels: paretoLabels, datasets: [{ type: 'bar', label: 'fi', data: paretoFi, backgroundColor: '#006BB4', yAxisID: 'y' }, { type: 'line', label: '% Acum', data: paretoPercent, borderColor: '#DE443B', yAxisID: 'y1' }] }} options={{...options, scales: {...options.scales, y1: { position: 'right', min: 0, max: 100, ticks: { color: '#DE443B' }, grid: { display: false } }}}} />;
+      case 'boxplot': 
+        return <Chart type='bar' data={{
+          labels: ['Muestra'],
+          datasets: [{
+            label: 'Rango Intercuartílico',
+            data: [[estadisticos.q1, estadisticos.q3]],
+            backgroundColor: 'rgba(202, 244, 56, 0.5)',
+            borderColor: 'var(--color-lime)',
+            borderWidth: 2,
+          }]
+        }} options={{...options, indexAxis: 'y', scales: { x: { grid: { color: '#333' } }, y: { display: false } }}} />;
       case 'pie': return <Pie data={{ labels: labels.slice(0, 5), datasets: [{ data: fiData.slice(0, 5), backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'] }] }} options={{...options, maintainAspectRatio: true, scales: {}}} />;
       default: return null;
     }
@@ -165,6 +181,7 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
       {[
         { id: 'histograma', title: 'Histograma y Polígono' },
         { id: 'ojiva', title: 'Ojiva' },
+        { id: 'boxplot', title: 'Caja y Bigotes (Boxplot)' },
         { id: 'pareto', title: 'Pareto' },
         { id: 'pie', title: 'Distribución Top 5' }
       ].map(chart => (
@@ -189,7 +206,11 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
         </div>
       </Modal>
 
-      <Tooltip id="chart-info-tooltip" style={{ backgroundColor: '#162325', color: '#fff', borderRadius: '10px', zIndex: 3000, maxWidth: '250px' }} render={({ content }) => (
+      <Tooltip 
+        id="chart-info-tooltip" 
+        style={{ backgroundColor: '#162325', color: '#fff', zIndex: 3000, maxWidth: '250px' }} 
+        border="1px solid var(--color-lime)"
+        render={({ content }) => (
         <div style={{ padding: '5px' }}>
           <strong style={{ color: 'var(--color-lime)' }}>{chartExplanations[content]?.titulo}</strong>
           <p style={{ fontSize: '0.8rem', margin: '5px 0', color: 'var(--color-sky)' }}>{chartExplanations[content]?.formula}</p>

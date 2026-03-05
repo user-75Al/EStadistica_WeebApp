@@ -65,6 +65,13 @@ export const calcularEstadisticos = (datos) => {
   if (curtosisVal > 0.5) curtosisLabel = "Leptocúrtica (Puntiaguda)";
   else if (curtosisVal < -0.5) curtosisLabel = "Platicúrtica (Aplanada)";
 
+  // NUEVO: Inferencia Estadística (Intervalo de Confianza al 95%)
+  // Z para 95% es 1.96
+  const errorEstandar = (Number(desviacionEstandar) / Math.sqrt(n)).toFixed(2);
+  const margenError = (1.96 * Number(errorEstandar)).toFixed(2);
+  const icInferior = (mediaVal - Number(margenError)).toFixed(2);
+  const icSuperior = (mediaVal + Number(margenError)).toFixed(2);
+
   return {
     media,
     mediana,
@@ -80,6 +87,9 @@ export const calcularEstadisticos = (datos) => {
     iqr: iqr.toFixed(2),
     outliers: outliers,
     sesgo: sesgoLabel,
-    curtosis: curtosisLabel
+    curtosis: curtosisLabel,
+    // Datos de Inferencia
+    margenError,
+    ic: `[${icInferior}, ${icSuperior}]`
   };
 };

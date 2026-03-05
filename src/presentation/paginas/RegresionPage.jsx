@@ -103,7 +103,8 @@ const RegresionPage = () => {
 
       <ExplicacionProcedimiento pasos={pasosFinales} />
 
-      <Tooltip id="reg-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+      <Tooltip id="reg-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', zIndex: 100 }}
+        border="1px solid var(--color-lime)"
         render={({ content }) => (
           <div style={{ textAlign: 'left', padding: '10px', maxWidth: '250px' }}>
             <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{regInfo[content]?.titulo}</strong>

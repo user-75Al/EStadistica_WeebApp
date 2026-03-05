@@ -81,7 +81,8 @@ const StemLeafDiagram = ({ datos }) => {
       <Tooltip 
         id="stem-leaf-info" 
         place="top"
-        style={{ backgroundColor: '#162325', color: '#fff', borderRadius: '12px', zIndex: 9999, maxWidth: '300px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', border: '1px solid var(--color-lime)' }}
+        style={{ backgroundColor: '#162325', color: '#fff', zIndex: 9999, maxWidth: '300px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+        border="1px solid var(--color-lime)"
       >
         <div style={{ padding: '10px' }}>
           <strong style={{ color: 'var(--color-lime)', fontSize: '1rem', display: 'block', marginBottom: '8px' }}>Interpretación</strong>

@@ -318,8 +318,12 @@ const chartMeta = [
     desc: "Utilidad: Esta gráfica representa el crecimiento acumulativo de las frecuencias relativas. \nInterpretación: Es fundamental para el cálculo visual de percentiles. Una pendiente pronunciada indica un rango de valores donde se acumula una gran cantidad de datos en un intervalo corto, mientras que una meseta refleja zonas de baja frecuencia o ausencia de datos." 
   },
   { 
-    title: "PRIORIZACIÓN ESTADÍSTICA (DIAGRAMA DE PARETO)", 
+    title: "ANÁLISIS DE PRIORIDADES (PARETO)", 
     desc: "Utilidad: Aplica el principio de Vilfredo Pareto (80/20) para separar los elementos 'vitales' de los 'triviales'. \nInterpretación: Las barras ordenadas de mayor a menor frecuencia, junto con la curva de porcentaje acumulado, permiten identificar qué conjunto de valores específicos representa el 80% del impacto total de la muestra, optimizando la toma de decisiones." 
+  },
+  { 
+    title: "CAJA Y BIGOTES (BOXPLOT)", 
+    desc: "Utilidad: Visualiza la dispersión y los cuartiles de la muestra. \nInterpretación: La caja central representa el 50% de los datos (IQR). Los 'bigotes' muestran el rango de los datos no atípicos, mientras que los puntos aislados identifican valores atípicos (outliers) que se alejan significativamente del patrón general." 
   },
   { 
     title: "SEGMENTACIÓN PROPORCIONAL (TOP 5 DOMINANTE)", 
@@ -328,8 +332,9 @@ const chartMeta = [
 ];
 
 const getStemLeafData = (datos) => {
-  if (!datos || datos.length === 0) return [];
-  const sorted = [...datos].sort((a, b) => a - b);
+  const safeDatos = Array.isArray(datos) ? datos : [];
+  if (safeDatos.length === 0) return [];
+  const sorted = [...safeDatos].sort((a, b) => a - b);
   const grupos = {};
 
   sorted.forEach(num => {
@@ -354,21 +359,21 @@ const getStemLeafData = (datos) => {
     .sort((a, b) => parseInt(a.stem) - parseInt(b.stem));
 };
 
-const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB, estadisticosB, frecuenciasB, graficosImgsB, comparar, probabilidadA }) => {
+const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], graficosImgsA = [], datosB = [], estadisticosB = {}, frecuenciasB = [], graficosImgsB = [], comparar, probabilidadA }) => {
   const fecha = new Date().toLocaleString();
   const slA = getStemLeafData(datosA);
   const slB = getStemLeafData(datosB);
   
-  const insightsA = generateInsights(estadisticosA, 'Muestra A');
-  const insightsB = comparar ? generateInsights(estadisticosB, 'Muestra B') : [];
-  const insightsComp = comparar ? generateComparativeAI(estadisticosA, estadisticosB) : [];
+  const insightsA = generateInsights(estadisticosA || {}, 'Muestra A');
+  const insightsB = comparar ? generateInsights(estadisticosB || {}, 'Muestra B') : { consistencia: '', volatilidad: '', prediccion: '' };
+  const insightsComp = (comparar && estadisticosA && estadisticosB) ? generateComparativeAI(estadisticosA, estadisticosB) : [];
 
   const renderStats = (estadisticos, type = 'A') => (
     <View style={styles.statsGrid}>
-      {Object.entries(estadisticos).map(([k, v]) => (
+      {estadisticos && Object.entries(estadisticos).map(([k, v]) => (
         <View key={k} style={[styles.statCard, type === 'A' ? styles.statCardA : styles.statCardB]}>
           <Text style={styles.statLabel}>{k.toUpperCase()}</Text>
-          <Text style={styles.statValue}>{Array.isArray(v) ? v.join(', ') : v}</Text>
+          <Text style={styles.statValue}>{Array.isArray(v) ? v.join(', ') : String(v)}</Text>
         </View>
       ))}
     </View>
@@ -384,22 +389,22 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Fᵢ</Text></View> 
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Fᵣ%</Text></View> 
       </View>
-      {frecuencias.map((row, i) => (
+      {Array.isArray(frecuencias) && frecuencias.length > 0 ? frecuencias.map((row, i) => (
         <View key={i} style={styles.tableRow}> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.valor}</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fi}</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fr}</Text></View> 
-          <View style={styles.tableCol}><Text style={styles.tableCell}>{(row.fr * 100).toFixed(2)}%</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{(Number(row.fr || 0) * 100).toFixed(2)}%</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.Fi}</Text></View> 
-          <View style={styles.tableCol}><Text style={styles.tableCell}>{(row.Fr * 100).toFixed(2)}%</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{(Number(row.Fr || 0) * 100).toFixed(2)}%</Text></View> 
         </View>
-      ))}
+      )) : <View style={styles.tableRow}><Text style={styles.tableCell}>No hay datos</Text></View>}
     </View>
   );
 
   const renderStemLeaf = (slData) => (
     <View style={styles.slContainer}>
-      {slData.length > 0 ? slData.map((row, i) => (
+      {Array.isArray(slData) && slData.length > 0 ? slData.map((row, i) => (
         <View key={i} style={styles.slRow}>
           <Text style={styles.slStem}>{row.stem}</Text>
           <Text style={styles.slLeaf}>{row.leaves}</Text>
@@ -407,6 +412,8 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
       )) : <Text style={{fontSize: 8, color: '#999'}}>No hay datos disponibles</Text>}
     </View>
   );
+
+  const espacioMuestralA = Array.isArray(datosA) ? [...new Set(datosA)].sort((a,b)=>a-b).join(', ') : '';
 
   return (
     <Document>
@@ -425,17 +432,17 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
         <View style={styles.indexContainer}>
           <Text style={styles.indexTitle}>TABLA DE CONTENIDOS (Interactiva)</Text>
-          <Link src="#section-metrics" style={styles.indexLink}>1. Métricas Descriptivas y de Calidad</Link>
-          <Link src="#section-insights" style={styles.indexLink}>2. Inteligencia Artificial: Conclusiones y Predicciones</Link>
-          {comparar && <Link src="#section-comp" style={styles.indexLink}>3. Análisis Comparativo Maestro (A vs B)</Link>}
-          <Link src="#section-tables" style={styles.indexLink}>{comparar ? '4' : '3'}. Tablas de Distribución de Frecuencias</Link>
-          <Link src="#section-dist" style={styles.indexLink}>{comparar ? '5' : '4'}. Análisis de Distribución (Tallo y Hoja)</Link>
-          <Link src="#section-visual" style={styles.indexLink}>{comparar ? '6' : '5'}. Visualización Gráfica UHD</Link>
+          <Text style={styles.indexLink}>1. Métricas Descriptivas y de Calidad</Text>
+          <Text style={styles.indexLink}>2. Inteligencia Artificial: Dictamen Maestro</Text>
+          {comparar && <Text style={styles.indexLink}>3. Análisis Comparativo Maestro (A vs B)</Text>}
+          <Text style={styles.indexLink}>{comparar ? '4' : '3'}. Tablas de Distribución de Frecuencias</Text>
+          <Text style={styles.indexLink}>{comparar ? '5' : '4'}. Análisis de Distribución (Tallo y Hoja)</Text>
+          <Text style={styles.indexLink}>{comparar ? '6' : '5'}. Visualización Gráfica UHD</Text>
         </View>
 
         <View style={{ marginTop: 20, padding: 15, borderLeftWidth: 4, borderLeftColor: '#CAF438', backgroundColor: '#FBFBFC' }}>
           <Text style={{ fontSize: 10, lineHeight: 1.6, color: '#555' }}>
-            Este documento integra el motor StatMind AI v4.0, proporcionando análisis predictivo, recomendaciones prescriptivas y comparativas de estabilidad estadística de alta fidelidad.
+            Este documento integra el motor StatMind AI v4.0, proporcionando análisis predictivo y comparativas de estabilidad estadística de alta fidelidad.
           </Text>
         </View>
         
@@ -444,7 +451,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
       {/* SECCIÓN 1: MÉTRICAS E INSIGHTS */}
       <Page size="A4" style={styles.page}>
-        <View id="section-metrics">
+        <View>
           <Text style={styles.sectionTitle}>I. Métricas Descriptivas y de Calidad</Text>
         </View>
         <View style={styles.dualRow}>
@@ -460,20 +467,22 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           )}
         </View>
 
-        <View id="section-insights" style={{ marginTop: 20 }}>
-          <Text style={styles.sectionTitle}>II. Inteligencia Artificial: Conclusiones y Predicciones</Text>
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.sectionTitle}>II. Inteligencia Artificial: Dictamen Maestro</Text>
           <View style={{ backgroundColor: '#F8F9FA', padding: 15, borderRadius: 6 }}>
-            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginBottom: 10 }}>MUESTRA A - ANÁLISIS MAESTRO</Text>
-            {insightsA.map((text, i) => (
-              <Text key={i} style={styles.insightItem}>{text}</Text>
-            ))}
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginBottom: 10 }}>ANÁLISIS ESTRATÉGICO</Text>
+            <Text style={styles.insightItem}>{insightsA.consistencia || 'Cargando análisis...'}</Text>
+            <Text style={styles.insightItem}>{insightsA.volatilidad || 'Cargando análisis...'}</Text>
+            <Text style={styles.insightItem}>{insightsA.prediccion || 'Cargando análisis...'}</Text>
             
             {comparar && (
               <>
-                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#749c00', marginVertical: 10 }}>MUESTRA B - ANÁLISIS MAESTRO</Text>
-                {insightsB.map((text, i) => (
-                  <Text key={i} style={styles.insightItem}>{text}</Text>
-                ))}
+                <View style={{marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#EEE'}}>
+                  <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#749c00', marginBottom: 10 }}>ANÁLISIS MUESTRA B</Text>
+                  <Text style={styles.insightItem}>{insightsB.consistencia || 'Cargando análisis...'}</Text>
+                  <Text style={styles.insightItem}>{insightsB.volatilidad || 'Cargando análisis...'}</Text>
+                  <Text style={styles.insightItem}>{insightsB.prediccion || 'Cargando análisis...'}</Text>
+                </View>
               </>
             )}
           </View>
@@ -485,23 +494,18 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
       {/* NUEVA SECCIÓN: IA COMPARATIVA */}
       {comparar && (
         <Page size="A4" style={styles.page}>
-          <View id="section-comp">
+          <View>
             <Text style={styles.sectionTitle}>III. Análisis Comparativo Maestro (A vs B)</Text>
           </View>
           <View style={{ backgroundColor: '#1E3A5F', padding: 20, borderRadius: 10 }}>
             <Text style={{ color: '#CAF438', fontSize: 12, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
               DICTAMEN DE INTELIGENCIA COMPARATIVA
             </Text>
-            {insightsComp.map((text, i) => (
+            {Array.isArray(insightsComp) && insightsComp.map((text, i) => (
               <View key={i} style={{ marginBottom: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)' }}>
                 <Text style={{ color: '#FFFFFF', fontSize: 10, lineHeight: 1.4 }}>{text}</Text>
               </View>
             ))}
-          </View>
-          <View style={{ marginTop: 20, padding: 15, backgroundColor: '#F8F9FA' }}>
-            <Text style={{ fontSize: 8, color: '#666', fontStyle: 'italic' }}>
-              Nota: El análisis de estabilidad se basa en el Coeficiente de Variación (CV), normalizando la dispersión respecto a la magnitud de cada muestra.
-            </Text>
           </View>
           <Text style={styles.footer} fixed>Página 3 | Reporte Estadístico UHD</Text>
         </Page>
@@ -509,7 +513,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
       {/* SECCIÓN: TABLAS DE FRECUENCIA */}
       <Page size="A4" style={styles.page}>
-        <View id="section-tables">
+        <View>
           <Text style={styles.sectionTitle}>{comparar ? 'IV' : 'III'}. Tablas de Distribución de Frecuencias</Text>
         </View>
         <View style={{ marginBottom: 20 }}>
@@ -527,7 +531,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
       {/* SECCIÓN: DISTRIBUCIÓN Y PROBABILIDAD */}
       <Page size="A4" style={styles.page}>
-        <View id="section-dist">
+        <View>
           <Text style={styles.sectionTitle}>{comparar ? 'V' : 'IV'}. Análisis de Distribución (Tallo y Hoja)</Text>
         </View>
         <View style={styles.dualRow}>
@@ -544,12 +548,12 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         </View>
 
         {probabilidadA && (
-          <View id="section-prob" style={{marginTop: 20}}>
+          <View style={{marginTop: 20}}>
             <Text style={styles.sectionTitle}>{comparar ? 'VI' : 'V'}. Análisis Probabilístico</Text>
             <View style={styles.probBox}>
               <Text style={styles.probTitle}>Evento Calculado (Muestra A): {probabilidadA.condicion}</Text>
               <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
-              <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + [...new Set(datosA)].sort((a,b)=>a-b).join(', ') + " }"}</Text>
+              <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + espacioMuestralA + " }"}</Text>
             </View>
           </View>
         )}
@@ -559,11 +563,11 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
       {/* SECCIÓN: VISUALIZACIÓN GRÁFICA */}
       <Page size="A4" style={styles.page}>
-        <View id="section-visual">
+        <View>
           <Text style={styles.sectionTitle}>{probabilidadA ? (comparar ? 'VII' : 'VI') : (comparar ? 'VI' : 'V')}. Visualización Gráfica UHD</Text>
         </View>
 
-        {graficosImgsA && graficosImgsA.length > 0 ? (
+        {Array.isArray(graficosImgsA) && graficosImgsA.length > 0 ? (
           graficosImgsA.map((img, i) => (
             <View key={i} style={styles.chartWrapper} wrap={false}>
               <View style={styles.chartHeader}>
@@ -576,7 +580,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
                   {img && <Image src={img} style={styles.chartImage} />}
                 </View>
                 
-                {comparar && graficosImgsB && graficosImgsB[i] && (
+                {comparar && Array.isArray(graficosImgsB) && graficosImgsB[i] && (
                   <View style={styles.chartImageContainer}>
                     <Text style={styles.chartLabel}>Muestra B</Text>
                     <Image src={graficosImgsB[i]} style={styles.chartImage} />

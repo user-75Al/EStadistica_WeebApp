@@ -141,7 +141,8 @@ const Probabilidad = ({ datos, onResultadoChange, onCalcular }) => {
 
       <Tooltip 
         id="prob-tooltip" 
-        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', zIndex: 100 }}
+        border="1px solid rgba(255,255,255,0.1)"
         render={({ content }) => (
           <div style={{ textAlign: 'left', padding: '10px', maxWidth: '250px' }}>
             <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{probFormulas[content]?.titulo}</strong>

@@ -94,7 +94,8 @@ const ConjuntosPage = () => {
       <Tooltip 
         id="conj-tooltip" 
         place="bottom"
-        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+        style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', zIndex: 100 }}
+        border="1px solid var(--color-lime)"
         render={({ content }) => (
           <div style={{ textAlign: 'left', padding: '10px', maxWidth: '250px' }}>
             <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{conjuntosInfo[content]?.titulo}</strong>

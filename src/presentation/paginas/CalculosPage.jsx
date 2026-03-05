@@ -2,8 +2,6 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import { toast } from 'react-hot-toast';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 import emailjs from '@emailjs/browser';
 import { VscDiffAdded, VscArrowLeft, VscFilePdf, VscMail, VscScreenFull, VscEyeClosed, VscSettings, VscReport, VscChevronUp, VscListSelection } from 'react-icons/vsc';
 import StatsGrid from '../componentes/StatsGrid';
@@ -33,7 +31,6 @@ const CalculosPage = ({
   const [generando, setGenerando] = useState(false);
   const [exportandoExcel, setExportandoExcel] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showInputB, setShowInputB] = useState(false);
   const [showInputA, setShowInputA] = useState(modo === 'manual');
   const [probabilidadResult, setProbabilidadResult] = useState(null);
@@ -62,6 +59,7 @@ const CalculosPage = ({
     { id: 'tabla', label: 'Tablas', icon: '📋' },
     { id: 'tallo-hoja', label: 'Distribución', icon: '🌿' },
     { id: 'graficos', label: 'Gráficos', icon: '📈' },
+    { id: 'boxplot', label: 'Boxplot', icon: '📦' },
     { id: 'interpretacion', label: 'Análisis', icon: '💡' }
   ];
 
@@ -88,11 +86,8 @@ const CalculosPage = ({
 
   useEffect(() => {
     if (resultadosA || resultadosB) {
-      setIsLoading(true);
       setHoraAnalisis(new Date().toLocaleTimeString());
       setProbabilidadResult(null);
-      const timer = setTimeout(() => setIsLoading(false), 600);
-      return () => clearTimeout(timer);
     }
   }, [resultadosA, resultadosB]);
 
@@ -133,13 +128,11 @@ const CalculosPage = ({
         
         const dataUrlOriginal = canvas.toDataURL('image/png');
         if (dataUrlOriginal && dataUrlOriginal.length > 1000) {
-          // Crear un canvas temporal para añadir fondo sólido (evita que elementos claros desaparezcan en el PDF blanco)
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = canvas.width;
           tempCanvas.height = canvas.height;
           const tempCtx = tempCanvas.getContext('2d');
           
-          // Fondo oscuro similar al de la aplicación para mantener visibilidad de textos claros
           tempCtx.fillStyle = '#162325';
           tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
           tempCtx.drawImage(canvas, 0, 0);
@@ -191,7 +184,7 @@ const CalculosPage = ({
 
       console.log(`[PDF] Capturas finalizadas. A: ${capsA.filter(c => c).length}, B: ${capsB.filter(c => c).length}`);
 
-      if (capsA.filter(c => c).length === 0) {
+      if (capsA.length === 0 || capsA.every(img => img === null)) {
         throw new Error('No se pudieron capturar las gráficas de la muestra A');
       }
 
@@ -241,7 +234,7 @@ const CalculosPage = ({
     }
   };
 
-  const manejarExportarExcel = async (target = 'A') => {
+  const manejarExportarExcel = async () => {
     setExportandoExcel(true);
     const tid = toast.loading('Generando Excel...');
     try {
@@ -538,7 +531,7 @@ const CalculosPage = ({
               </div>
             </motion.section>
             <motion.section id="interpretacion" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>
-              <div className="section-title centered"><h3>💡 ANÁLISIS INTERPRETATIVO</h3></div>
+              <div className="section-title centered"><h3>💡 IA INSIGHTS & ANÁLISIS</h3></div>
               <div className="zoom-container">
                 <ExplicacionProcedimiento resultados={resultadosA} resultadosB={resultadosB} comparar={comparar} />
               </div>

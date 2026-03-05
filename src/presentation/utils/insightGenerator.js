@@ -1,41 +1,60 @@
 export const generateInsights = (estadisticos, label = 'Muestra A') => {
-  const insights = [];
+  const insights = {};
 
-  // 1. ANÁLISIS DE TENDENCIA (Opción 4: Recomendador)
+  // 1. CONSISTENCIA (Recomendador)
   const diffMediaMediana = Math.abs(estadisticos.media - estadisticos.mediana);
-  const isAsymmetric = diffMediaMediana > (estadisticos.media * 0.1); // 10% de diferencia
+  const isAsymmetric = diffMediaMediana > (estadisticos.media * 0.1); 
 
-  if (isAsymmetric) {
-    insights.push(`📊 RECOMENDACIÓN: Sus datos son altamente asimétricos. Le sugerimos utilizar la MEDIANA (${estadisticos.mediana}) como medida de tendencia central más confiable, ya que la media está siendo distorsionada por valores extremos.`);
-  } else {
-    insights.push(`✅ CONSISTENCIA: La media y la mediana son similares, lo que indica una distribución equilibrada. Puede confiar plenamente en el PROMEDIO (${estadisticos.media}) para sus cálculos.`);
-  }
+  insights.consistencia = isAsymmetric
+    ? `📊 RECOMENDACIÓN: Sus datos son altamente asimétricos. Le sugerimos utilizar la MEDIANA (${estadisticos.mediana}) como medida de tendencia central más confiable, ya que la media está siendo distorsionada por valores extremos.`
+    : `✅ CONSISTENCIA: La media y la mediana son similares, lo que indica una distribución equilibrada. Puede confiar plenamente en el PROMEDIO (${estadisticos.media}) para sus cálculos.`;
 
-  // 2. DISPERSIÓN Y CALIDAD
-  if (Number(estadisticos.desviacion) > (estadisticos.media * 0.5)) {
-    insights.push(`⚠️ ALTA VOLATILIDAD: La desviación estándar es muy alta respecto al promedio. Los datos están muy dispersos y los resultados podrían ser poco predecibles.`);
-  }
+  // 2. VOLATILIDAD (Dispersión)
+  const esVolatil = Number(estadisticos.desviacion) > (estadisticos.media * 0.5);
+  insights.volatilidad = esVolatil
+    ? `⚠️ ALTA VOLATILIDAD: La desviación estándar es muy alta respecto al promedio. Los datos están muy dispersos y los resultados podrían ser poco predecibles.`
+    : `📉 ESTABILIDAD: La muestra presenta una dispersión moderada, lo que garantiza una mayor previsibilidad en los resultados analizados.`;
 
-  // 3. PREDICCIÓN PROBABILÍSTICA (Opción 3: Forecasting)
-  // Basado en la regla empírica (1 Desviación Estándar = ~68%)
+  // 3. PREDICCIÓN (Forecasting)
   const limiteInf = (Number(estadisticos.media) - Number(estadisticos.desviacion)).toFixed(2);
   const limiteSup = (Number(estadisticos.media) + Number(estadisticos.desviacion)).toFixed(2);
-  
-  insights.push(`🔮 PREDICCIÓN: Existe un 68% de probabilidad de que el próximo dato que ingrese se encuentre en el rango de ${limiteInf} a ${limiteSup}.`);
+  insights.prediccion = `🔮 PREDICCIÓN: Existe un 68% de probabilidad de que el próximo dato que ingrese se encuentre en el rango de ${limiteInf} a ${limiteSup}.`;
 
-  // 4. ANÁLISIS DE FORMA
-  insights.push(`En cuanto a la morfología, la distribución es ${estadisticos.sesgo} con un apuntamiento ${estadisticos.curtosis}.`);
+  // 4. ANÁLISIS DE FORMA (Morfología)
+  insights.morfologia = `🧬 MORFOLOGÍA: En cuanto a la forma, la distribución es ${estadisticos.sesgo} con un apuntamiento ${estadisticos.curtosis}.`;
+
+  // 5. INFERENCIA
+  insights.inferencia = `💼 INFERENCIA: Con un 95% de confianza, el verdadero promedio poblacional se encuentra en el intervalo ${estadisticos.ic}. El margen de error es de ±${estadisticos.margenError}.`;
 
   return insights;
 };
 
-// ... (funciones anteriores se mantienen)
-
 export const generateComparativeAI = (statsA, statsB) => {
-  // ... (código previo)
+  const comparative = [];
+  const vA = (statsA.desviacion / statsA.media) * 100;
+  const vB = (statsB.desviacion / statsB.media) * 100;
+  
+  if (Math.abs(vA - vB) > 5) {
+    const masEstable = vA < vB ? 'Muestra A' : 'Muestra B';
+    const porcentaje = Math.abs(vA - vB).toFixed(1);
+    comparative.push(`📉 ESTABILIDAD: La ${masEstable} es un ${porcentaje}% más estable y predecible que su contraparte.`);
+  } else {
+    comparative.push(`⚖️ EQUILIBRIO: Ambas muestras presentan niveles de riesgo y dispersión muy similares.`);
+  }
+
+  const diffPromedio = (((statsB.media - statsA.media) / statsA.media) * 100).toFixed(1);
+  if (Math.abs(diffPromedio) > 0) {
+    const sentido = diffPromedio > 0 ? 'superior' : 'inferior';
+    comparative.push(`📈 MAGNITUD: El promedio de la Muestra B es un ${Math.abs(diffPromedio)}% ${sentido} al de la Muestra A.`);
+  }
+
+  if (vA < vB && statsA.media > statsB.media) {
+    comparative.push(`🏆 INSIGHT MAESTRO: La Muestra A es la opción superior, ofreciendo valores más altos con una mayor seguridad estadística.`);
+  }
+
+  return comparative;
 };
 
-// NUEVO: IA PARA CONJUNTOS
 export const generateConjuntosAI = (resultados) => {
   const insights = [];
   if (resultados.interseccion.length === 0) {
@@ -50,7 +69,6 @@ export const generateConjuntosAI = (resultados) => {
   return insights;
 };
 
-// NUEVO: IA PARA DISTRIBUCIONES
 export const generateDistribucionesAI = (tipo, params, resultado) => {
   const insights = [];
   if (tipo === 'binomial') {
@@ -67,7 +85,6 @@ export const generateDistribucionesAI = (tipo, params, resultado) => {
   return insights;
 };
 
-// NUEVO: IA PARA ANÁLISIS COMBINATORIO
 export const generateCombinatoriaAI = (n, r, p, c) => {
   const insights = [];
   const ratio = (c / p * 100).toFixed(2);
@@ -78,7 +95,6 @@ export const generateCombinatoriaAI = (n, r, p, c) => {
   return insights;
 };
 
-// NUEVO: IA PARA REGRESIÓN
 export const generateRegresionAI = (resultados) => {
   const insights = [];
   const r = Math.abs(Number(resultados.correlacion));
@@ -90,4 +106,3 @@ export const generateRegresionAI = (resultados) => {
   insights.push(`💡 EXPLICACIÓN: Su modelo explica el ${(resultados.determinacion * 100).toFixed(1)}% de la variabilidad de los datos analizados.`);
   return insights;
 };
-

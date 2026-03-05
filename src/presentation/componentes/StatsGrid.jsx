@@ -127,7 +127,8 @@ const StatsGrid = ({ estadisticos }) => {
         
         <Tooltip 
           id="formula-tooltip" 
-          style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
+          style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', zIndex: 100 }}
+          border="1px solid var(--color-lime)"
           render={({ content }) => (
             <div style={{ textAlign: 'left', padding: '10px', maxWidth: '280px' }}>
               <strong style={{ color: 'var(--color-lime)', display: 'block', marginBottom: '6px' }}>{formulasInfo[content]?.titulo}</strong>

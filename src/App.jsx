@@ -12,7 +12,6 @@ import DistribucionesPage from './presentation/paginas/DistribucionesPage';
 import RegresionPage from './presentation/paginas/RegresionPage';
 import PillNav from './presentation/componentes/PillNav';
 import ClearButton from './presentation/componentes/ClearButton';
-import { VscSymbolNumeric, VscEyeClosed, VscSettingsGear } from 'react-icons/vsc';
 import { ServiciosEstadistica } from './application/implementaciones/ServiciosEstadistica';
 import { LocalDatosRepository } from './infrastructure/implementaciones/LocalDatosRepository';
 import { Datos } from './core/entidades/Datos';
