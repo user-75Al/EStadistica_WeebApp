@@ -4,6 +4,7 @@ import { Tooltip } from 'react-tooltip';
 import { VscInfo } from 'react-icons/vsc';
 import { calcularRegresion } from '../../core/casos_de_uso/calcularRegresion';
 import ExplicacionProcedimiento from '../componentes/ExplicacionProcedimiento';
+import { generateRegresionAI } from '../utils/insightGenerator';
 import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
@@ -31,11 +32,19 @@ const RegresionPage = () => {
     setResultados({ ...res, x, y });
   };
 
-  const pasos = [
+  const pasosBasicos = [
     { titulo: "Correlación (r)", desc: "Indica qué tan fuertemente están relacionadas las dos variables. Un valor cercano a 1 o -1 indica una relación perfecta, mientras que cerca de 0 indica que no hay relación." },
     { titulo: "Recta de Regresión", desc: "Es la línea que minimiza la distancia entre todos los puntos. Su ecuación y = mx + b nos permite predecir valores de Y si conocemos el valor de X." },
     { titulo: "Determinación (R²)", desc: "Es el cuadrado del coeficiente de correlación. Representa qué tanta confianza podemos tener en nuestro modelo de predicción." }
   ];
+
+  const iaPasos = resultados ? generateRegresionAI(resultados).map(text => ({
+    titulo: "🤖 IA PREDICTIVA",
+    desc: text,
+    formula: "Correlación Maestro"
+  })) : [];
+
+  const pasosFinales = [...pasosBasicos, ...iaPasos];
 
   const chartData = useMemo(() => {
     if (!resultados) return null;
@@ -92,7 +101,7 @@ const RegresionPage = () => {
         </div>
       )}
 
-      {resultados && <ExplicacionProcedimiento pasos={pasos} />}
+      <ExplicacionProcedimiento pasos={pasosFinales} />
 
       <Tooltip id="reg-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
         render={({ content }) => (

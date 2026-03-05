@@ -1,53 +1,54 @@
 import React, { useMemo } from 'react';
+import { generateInsights, generateComparativeAI } from '../utils/insightGenerator';
 import '../estilos/ExplicacionCards.css';
 
 const ExplicacionProcedimiento = ({ resultados, resultadosB, comparar, pasos: pasosProp }) => {
   const pasos = useMemo(() => {
-    // Si se pasan pasos directos (como en Regresión, Distribuciones, etc.)
     if (pasosProp) return pasosProp;
 
-    // Si es el modo comparativo de Cálculos
+    // MODO COMPARATIVO: IA AVANZADA A vs B
     if (comparar && resultados && resultadosB) {
-      const diffMedia = (resultados.estadisticos.media - resultadosB.estadisticos.media).toFixed(2);
+      const insightsIA = generateComparativeAI(resultados.estadisticos, resultadosB.estadisticos);
+      
       return [
         {
-          titulo: "Comparativa de Tendencia",
-          desc: `La diferencia entre los promedios es de ${Math.abs(diffMedia)} unidades. ${Math.abs(diffMedia) > 1 ? 'Existe una disparidad notable en el nivel central de las muestras.' : 'Ambas muestras mantienen una tendencia central similar.'}`,
-          formula: `Δx̄ = |x̄A - x̄B| = ${Math.abs(diffMedia)}`
+          titulo: "🤖 IA COMPARATIVA: ESTABILIDAD",
+          desc: insightsIA[0] || "Ambas muestras presentan una estabilidad similar.",
+          formula: "CV = (s/x̄) * 100"
         },
         {
-          titulo: "Análisis de Dispersión",
-          desc: `La Muestra ${resultados.estadisticos.desviacion > resultadosB.estadisticos.desviacion ? 'A' : 'B'} presenta mayor variabilidad interna, lo que sugiere datos más heterogéneos frente a su contraparte.`,
-          formula: `sA: ${resultados.estadisticos.desviacion} vs sB: ${resultadosB.estadisticos.desviacion}`
+          titulo: "🤖 IA COMPARATIVA: MAGNITUD",
+          desc: insightsIA[1] || "No hay diferencias significativas en la escala de los promedios.",
+          formula: "Δ% = ((xB - xA) / xA) * 100"
         },
         {
-          titulo: "Conclusión de Sesgo",
-          desc: "Se analiza la asimetría de ambos conjuntos. Esto revela si las muestras comparten la misma naturaleza de distribución o si tienen comportamientos opuestos.",
-          formula: "Sesgo = (Media - Mediana)"
+          titulo: "🏆 CONCLUSIÓN MAESTRA",
+          desc: insightsIA[2] || "Ambas muestras son válidas, elija según su objetivo de riesgo.",
+          formula: "Análisis Multivariable StatMind"
         }
       ];
     }
 
-    // Si es modo individual de Cálculos
+    // MODO INDIVIDUAL: IA PREDICTIVA Y RECOMENDACIÓN
     if (resultados) {
-      const { estadisticos, datosOriginales } = resultados;
-      const tieneOutliers = estadisticos.outliers && estadisticos.outliers.length > 0;
+      const { estadisticos } = resultados;
+      const insights = generateInsights(estadisticos);
       
       return [
         {
-          titulo: "1. Calidad de Datos",
-          desc: `${tieneOutliers ? `Se detectaron ${estadisticos.outliers.length} valores atípicos (${estadisticos.outliers.join(', ')}). ` : 'Muestra limpia sin valores atípicos significativos. '} El rango intercuartílico es de ${estadisticos.iqr}.`,
-          formula: `IQR = Q3 - Q1 = ${estadisticos.iqr}`
+          titulo: "🎯 RECOMENDACIÓN TÉCNICA",
+          desc: insights[0],
+          formula: "|x̄ - Me| > 10%?"
         },
         {
-          titulo: "2. Morfología",
-          desc: `La distribución se comporta como ${estadisticos.sesgo} y presenta una curtosis de tipo ${estadisticos.curtosis}.`,
-          formula: `Sesgo: ${estadisticos.media} vs ${estadisticos.mediana}`
+          titulo: "🔮 PREDICCIÓN (FORECASTING)",
+          desc: insights[2],
+          formula: "P(x) = x̄ ± 1s"
         },
         {
-          titulo: "3. Dispersión UHD",
-          desc: `Con una desviación de ${estadisticos.desviacion} y varianza de ${estadisticos.varianza}, los datos muestran un nivel de ${Number(estadisticos.desviacion) > 2 ? 'alta' : 'baja'} concentración.`,
-          formula: `s = ${estadisticos.desviacion}`
+          titulo: "🧬 ANÁLISIS DE MORFOLOGÍA",
+          desc: insights[3],
+          formula: "Sesgo & Curtosis"
         }
       ];
     }

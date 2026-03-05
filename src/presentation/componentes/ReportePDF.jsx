@@ -1,6 +1,6 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image, Link } from '@react-pdf/renderer';
-import { generateInsights } from '../utils/insightGenerator';
+import { generateInsights, generateComparativeAI } from '../utils/insightGenerator';
 
 const styles = StyleSheet.create({
   page: { 
@@ -361,6 +361,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
   
   const insightsA = generateInsights(estadisticosA, 'Muestra A');
   const insightsB = comparar ? generateInsights(estadisticosB, 'Muestra B') : [];
+  const insightsComp = comparar ? generateComparativeAI(estadisticosA, estadisticosB) : [];
 
   const renderStats = (estadisticos, type = 'A') => (
     <View style={styles.statsGrid}>
@@ -409,7 +410,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
   return (
     <Document>
-      {/* PÁGINA 1: PORTADA E ÍNDICE INTERACTIVO */}
+      {/* PORTADA E ÍNDICE INTERACTIVO */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -418,30 +419,30 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.dateText}>Generado el {fecha}</Text>
-            <Text style={[styles.dateText, {marginTop: 2}]}>IA-Enhanced Software V3.0</Text>
+            <Text style={[styles.dateText, {marginTop: 2}]}>StatMind AI V4.0 UHD</Text>
           </View>
         </View>
 
         <View style={styles.indexContainer}>
           <Text style={styles.indexTitle}>TABLA DE CONTENIDOS (Interactiva)</Text>
           <Link src="#section-metrics" style={styles.indexLink}>1. Métricas Descriptivas y de Calidad</Link>
-          <Link src="#section-insights" style={styles.indexLink}>2. Conclusiones Generadas por IA (Insights)</Link>
-          <Link src="#section-tables" style={styles.indexLink}>3. Tablas de Distribución de Frecuencias</Link>
-          <Link src="#section-dist" style={styles.indexLink}>4. Análisis de Distribución (Tallo y Hoja)</Link>
-          {probabilidadA && <Link src="#section-prob" style={styles.indexLink}>5. Análisis Probabilístico</Link>}
-          <Link src="#section-visual" style={styles.indexLink}>{probabilidadA ? '6' : '5'}. Visualización Gráfica UHD</Link>
+          <Link src="#section-insights" style={styles.indexLink}>2. Inteligencia Artificial: Conclusiones y Predicciones</Link>
+          {comparar && <Link src="#section-comp" style={styles.indexLink}>3. Análisis Comparativo Maestro (A vs B)</Link>}
+          <Link src="#section-tables" style={styles.indexLink}>{comparar ? '4' : '3'}. Tablas de Distribución de Frecuencias</Link>
+          <Link src="#section-dist" style={styles.indexLink}>{comparar ? '5' : '4'}. Análisis de Distribución (Tallo y Hoja)</Link>
+          <Link src="#section-visual" style={styles.indexLink}>{comparar ? '6' : '5'}. Visualización Gráfica UHD</Link>
         </View>
 
         <View style={{ marginTop: 20, padding: 15, borderLeftWidth: 4, borderLeftColor: '#CAF438', backgroundColor: '#FBFBFC' }}>
           <Text style={{ fontSize: 10, lineHeight: 1.6, color: '#555' }}>
-            Este documento proporciona un análisis exhaustivo de los datos suministrados, utilizando algoritmos de estadística descriptiva avanzada e inteligencia analítica para la detección de patrones y anomalías.
+            Este documento integra el motor StatMind AI v4.0, proporcionando análisis predictivo, recomendaciones prescriptivas y comparativas de estabilidad estadística de alta fidelidad.
           </Text>
         </View>
         
-        <Text style={styles.footer} fixed>Reporte Estadístico UHD | Navegación Habilitada</Text>
+        <Text style={styles.footer} fixed>Reporte Estadístico UHD | StatMind AI Enabled</Text>
       </Page>
 
-      {/* PÁGINA 2: MÉTRICAS E INSIGHTS */}
+      {/* SECCIÓN 1: MÉTRICAS E INSIGHTS */}
       <Page size="A4" style={styles.page}>
         <View id="section-metrics">
           <Text style={styles.sectionTitle}>I. Métricas Descriptivas y de Calidad</Text>
@@ -460,16 +461,16 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         </View>
 
         <View id="section-insights" style={{ marginTop: 20 }}>
-          <Text style={styles.sectionTitle}>II. Conclusiones Generadas por IA (Insights)</Text>
+          <Text style={styles.sectionTitle}>II. Inteligencia Artificial: Conclusiones y Predicciones</Text>
           <View style={{ backgroundColor: '#F8F9FA', padding: 15, borderRadius: 6 }}>
-            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginBottom: 10 }}>MUESTRA A - ANÁLISIS NARRATIVO</Text>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginBottom: 10 }}>MUESTRA A - ANÁLISIS MAESTRO</Text>
             {insightsA.map((text, i) => (
               <Text key={i} style={styles.insightItem}>{text}</Text>
             ))}
             
             {comparar && (
               <>
-                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#749c00', marginVertical: 10 }}>MUESTRA B - ANÁLISIS NARRATIVO</Text>
+                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#749c00', marginVertical: 10 }}>MUESTRA B - ANÁLISIS MAESTRO</Text>
                 {insightsB.map((text, i) => (
                   <Text key={i} style={styles.insightItem}>{text}</Text>
                 ))}
@@ -481,10 +482,35 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         <Text style={styles.footer} fixed>Página 2 | Reporte Estadístico UHD</Text>
       </Page>
 
-      {/* PÁGINA 3: TABLAS DE FRECUENCIA */}
+      {/* NUEVA SECCIÓN: IA COMPARATIVA */}
+      {comparar && (
+        <Page size="A4" style={styles.page}>
+          <View id="section-comp">
+            <Text style={styles.sectionTitle}>III. Análisis Comparativo Maestro (A vs B)</Text>
+          </View>
+          <View style={{ backgroundColor: '#1E3A5F', padding: 20, borderRadius: 10 }}>
+            <Text style={{ color: '#CAF438', fontSize: 12, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+              DICTAMEN DE INTELIGENCIA COMPARATIVA
+            </Text>
+            {insightsComp.map((text, i) => (
+              <View key={i} style={{ marginBottom: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)' }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 10, lineHeight: 1.4 }}>{text}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={{ marginTop: 20, padding: 15, backgroundColor: '#F8F9FA' }}>
+            <Text style={{ fontSize: 8, color: '#666', fontStyle: 'italic' }}>
+              Nota: El análisis de estabilidad se basa en el Coeficiente de Variación (CV), normalizando la dispersión respecto a la magnitud de cada muestra.
+            </Text>
+          </View>
+          <Text style={styles.footer} fixed>Página 3 | Reporte Estadístico UHD</Text>
+        </Page>
+      )}
+
+      {/* SECCIÓN: TABLAS DE FRECUENCIA */}
       <Page size="A4" style={styles.page}>
         <View id="section-tables">
-          <Text style={styles.sectionTitle}>III. Tablas de Distribución de Frecuencias</Text>
+          <Text style={styles.sectionTitle}>{comparar ? 'IV' : 'III'}. Tablas de Distribución de Frecuencias</Text>
         </View>
         <View style={{ marginBottom: 20 }}>
           <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
@@ -496,13 +522,13 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
             {renderFrequencyTable(frecuenciasB)}
           </View>
         )}
-        <Text style={styles.footer} fixed>Página 3 | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página {comparar ? '4' : '3'} | Reporte Estadístico UHD</Text>
       </Page>
 
-      {/* PÁGINA 4: DISTRIBUCIÓN Y PROBABILIDAD */}
+      {/* SECCIÓN: DISTRIBUCIÓN Y PROBABILIDAD */}
       <Page size="A4" style={styles.page}>
         <View id="section-dist">
-          <Text style={styles.sectionTitle}>IV. Análisis de Distribución (Tallo y Hoja)</Text>
+          <Text style={styles.sectionTitle}>{comparar ? 'V' : 'IV'}. Análisis de Distribución (Tallo y Hoja)</Text>
         </View>
         <View style={styles.dualRow}>
           <View style={styles.column}>
@@ -519,7 +545,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
         {probabilidadA && (
           <View id="section-prob" style={{marginTop: 20}}>
-            <Text style={styles.sectionTitle}>V. Análisis Probabilístico</Text>
+            <Text style={styles.sectionTitle}>{comparar ? 'VI' : 'V'}. Análisis Probabilístico</Text>
             <View style={styles.probBox}>
               <Text style={styles.probTitle}>Evento Calculado (Muestra A): {probabilidadA.condicion}</Text>
               <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
@@ -528,13 +554,13 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
         )}
         
-        <Text style={styles.footer} fixed>Página 4 | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página {comparar ? '5' : '4'} | Reporte Estadístico UHD</Text>
       </Page>
 
-      {/* PÁGINA 5: VISUALIZACIÓN GRÁFICA */}
+      {/* SECCIÓN: VISUALIZACIÓN GRÁFICA */}
       <Page size="A4" style={styles.page}>
         <View id="section-visual">
-          <Text style={styles.sectionTitle}>{probabilidadA ? 'VI' : 'V'}. Visualización Gráfica UHD</Text>
+          <Text style={styles.sectionTitle}>{probabilidadA ? (comparar ? 'VII' : 'VI') : (comparar ? 'VI' : 'V')}. Visualización Gráfica UHD</Text>
         </View>
 
         {graficosImgsA && graficosImgsA.length > 0 ? (
@@ -571,7 +597,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
         )}
         
-        <Text style={styles.footer} fixed>Página 5 | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página {comparar ? '6' : '5'} | Reporte Estadístico UHD</Text>
       </Page>
     </Document>
   );

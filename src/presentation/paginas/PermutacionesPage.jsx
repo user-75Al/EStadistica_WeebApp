@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Tooltip } from 'react-tooltip';
 import { VscInfo } from 'react-icons/vsc';
 import ExplicacionProcedimiento from '../componentes/ExplicacionProcedimiento';
+import { generateCombinatoriaAI } from '../utils/insightGenerator';
 import 'react-tooltip/dist/react-tooltip.css';
 
 const helperContent = {
@@ -29,11 +30,19 @@ const PermutacionesPage = () => {
   const p = n < r ? 0 : factorial(n) / factorial(n - r);
   const c = n < r ? 0 : factorial(n) / (factorial(r) * factorial(n - r));
 
-  const pasos = [
+  const pasosBasicos = [
     { titulo: "Factorial (n!)", desc: "Es la base de la combinatoria. Multiplicamos todos los números desde 1 hasta el total para conocer todas las formas posibles de organizar los elementos." },
     { titulo: "Permutaciones", desc: "Se usan cuando el orden de los elementos es importante (ej: posiciones en una carrera). Aplicamos la fórmula n! / (n-r)!." },
     { titulo: "Combinaciones", desc: "Se usan cuando el orden NO importa (ej: elegir personas para un comité). Es igual a la permutación pero dividida entre r! para quitar duplicados por orden." }
   ];
+
+  const iaPasos = generateCombinatoriaAI(n, r, p, c).map(text => ({
+    titulo: "🤖 IA ESTRUCTURAL",
+    desc: text,
+    formula: "Espacio Muestral"
+  }));
+
+  const pasosFinales = [...pasosBasicos, ...iaPasos];
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="calculos-page" style={{ paddingTop: '100px' }}>
@@ -74,7 +83,7 @@ const PermutacionesPage = () => {
         </div>
       </div>
 
-      <ExplicacionProcedimiento pasos={pasos} />
+      <ExplicacionProcedimiento pasos={pasosFinales} />
 
       <Tooltip id="perm-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
         render={({ content }) => (

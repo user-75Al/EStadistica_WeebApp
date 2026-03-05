@@ -4,6 +4,7 @@ import { Tooltip } from 'react-tooltip';
 import { VscInfo } from 'react-icons/vsc';
 import { calcularDistribuciones } from '../../core/casos_de_uso/calcularDistribuciones';
 import ExplicacionProcedimiento from '../componentes/ExplicacionProcedimiento';
+import { generateDistribucionesAI } from '../utils/insightGenerator';
 import 'react-tooltip/dist/react-tooltip.css';
 import '../estilos/App.css';
 
@@ -31,11 +32,19 @@ const DistribucionesPage = () => {
     setResultado(res);
   };
 
-  const pasos = [
+  const pasosBasicos = [
     { titulo: "Distribución Binomial", desc: "Se usa para experimentos con solo dos resultados posibles (éxito/fracaso). Requiere un número fijo de ensayos (n) y una probabilidad constante (p)." },
     { titulo: "Distribución de Poisson", desc: "Útil para contar eventos raros que ocurren en un tiempo o espacio determinado. Se basa en el promedio de ocurrencias (lambda)." },
     { titulo: "Distribución Normal", desc: "Es la más importante en estadística. Permite calcular qué tan alejado está un valor (x) del promedio (media) usando desviaciones estándar." }
   ];
+
+  const iaPasos = resultado ? generateDistribucionesAI(tipo, params, resultado).map(text => ({
+    titulo: "🤖 IA ANALYTICS",
+    desc: text,
+    formula: "Inferencia Probabilística"
+  })) : [];
+
+  const pasosFinales = [...pasosBasicos, ...iaPasos];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="calculos-page" style={{ paddingTop: '100px' }}>
@@ -91,7 +100,7 @@ const DistribucionesPage = () => {
         )}
       </div>
 
-      <ExplicacionProcedimiento pasos={pasos} />
+      <ExplicacionProcedimiento pasos={pasosFinales} />
 
       <Tooltip id="dist-tooltip" style={{ backgroundColor: 'rgba(6, 0, 16, 0.95)', color: '#fff', borderRadius: '12px', zIndex: 100 }}
         render={({ content }) => (

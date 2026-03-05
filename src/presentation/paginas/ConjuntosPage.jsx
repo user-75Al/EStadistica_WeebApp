@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Tooltip } from 'react-tooltip';
 import { VscInfo } from 'react-icons/vsc';
 import ExplicacionProcedimiento from '../componentes/ExplicacionProcedimiento';
+import { generateConjuntosAI } from '../utils/insightGenerator';
 import 'react-tooltip/dist/react-tooltip.css';
 
 const conjuntosInfo = {
@@ -33,11 +34,19 @@ const ConjuntosPage = () => {
     });
   };
 
-  const pasos = [
+  const pasosBasicos = [
     { titulo: "Unión de Conjuntos", desc: "Consiste en agrupar todos los elementos de ambos conjuntos. Si un elemento aparece en ambos, solo se escribe una vez en el resultado final." },
     { titulo: "Intersección", desc: "Aquí buscamos únicamente los elementos que se repiten. Es el área donde ambos conjuntos se solapan en un diagrama de Venn." },
     { titulo: "Diferencia Relativa", desc: "Calculamos qué elementos son exclusivos de un conjunto. A-B elimina de A todo lo que también pertenezca a B." }
   ];
+
+  const iaPasos = resultados ? generateConjuntosAI(resultados).map(text => ({
+    titulo: "🤖 IA INSIGHT",
+    desc: text,
+    formula: "Análisis Heurístico"
+  })) : [];
+
+  const pasosFinales = [...pasosBasicos, ...iaPasos];
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="calculos-page" style={{ paddingTop: '100px' }}>
@@ -78,7 +87,7 @@ const ConjuntosPage = () => {
               <span className="stat-value">{resultados.diferenciaBA.length > 0 ? `{ ${resultados.diferenciaBA.join(', ')} }` : '∅'}</span>
             </div>
           </div>
-          <ExplicacionProcedimiento pasos={pasos} />
+          <ExplicacionProcedimiento pasos={pasosFinales} />
         </>
       )}
 
