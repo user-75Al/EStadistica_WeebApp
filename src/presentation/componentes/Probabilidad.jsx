@@ -27,7 +27,7 @@ const probFormulas = {
   }
 };
 
-const Probabilidad = ({ datos, onResultadoChange }) => {
+const Probabilidad = ({ datos, onResultadoChange, onCalcular }) => {
   const [condicion, setCondicion] = useState('');
   const [resultado, setResultado] = useState(null);
 
@@ -36,6 +36,7 @@ const Probabilidad = ({ datos, onResultadoChange }) => {
     const res = calcularProbabilidad(datos, condicion);
     setResultado(res);
     if (onResultadoChange) onResultadoChange({ ...res, condicion });
+    if (onCalcular) onCalcular({ ...res, condicion });
   };
 
   const espacioMuestral = [...new Set(datos)].sort((a, b) => a - b);

@@ -1,12 +1,11 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
-import { toJpeg, toPng } from 'html-to-image';
 import { toast } from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import emailjs from '@emailjs/browser';
-import { VscDiffAdded, VscArrowLeft, VscFilePdf, VscMail, VscScreenFull, VscEyeClosed, VscSettings, VscReport } from 'react-icons/vsc';
+import { VscDiffAdded, VscArrowLeft, VscFilePdf, VscMail, VscScreenFull, VscEyeClosed, VscSettings, VscReport, VscChevronUp, VscListSelection } from 'react-icons/vsc';
 import StatsGrid from '../componentes/StatsGrid';
 import TablaFrecuencias from '../componentes/TablaFrecuencias';
 import Graficos from '../componentes/Graficos';
@@ -21,25 +20,39 @@ import { ExportadorExcel } from '../../application/ExportadorExcel';
 import { usePreferences } from '../../hooks/usePreferences';
 
 const CalculosPage = ({ 
-  modo, resultadosA, resultadosB, comparar, error, onCalculate, onClearError, onRandom, onClear 
+  modo, resultadosA, resultadosB, comparar, error, onCalculate, onClearError, onRandom, onClear,
+  isFullscreen, onToggleFullscreen, showSidebar, onToggleSidebar
 }) => {
   const chartsContainerRef = useRef(null);
   const { preferences, toggleChart } = usePreferences();
   const [showPrefs, setShowPrefs] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
-  const [graficosImgs, setGraficosImgs] = useState([]);
-  const [graficosImgsB, setGraficosImgsB] = useState([]);
+  const [imagenes, setImagenes] = useState({ a: [], b: [] });
+  const [pdfPreparado, setPdfPreparado] = useState(false);
   const [generando, setGenerando] = useState(false);
   const [exportandoExcel, setExportandoExcel] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showInputB, setShowInputB] = useState(false);
+  const [showInputA, setShowInputA] = useState(modo === 'manual');
   const [probabilidadResult, setProbabilidadResult] = useState(null);
   const [horaAnalisis, setHoraAnalisis] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [email, setEmail] = useState('');
   const [enviandoEmail, setEnviandoEmail] = useState(false);
-  const [modoPresentacion, setModoPresentacion] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const excelExporter = useMemo(() => new ExportadorExcel(), []);
 
@@ -53,80 +66,142 @@ const CalculosPage = ({
   ];
 
   const revealVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+    hidden: { 
+      opacity: 0, 
+      y: 100, 
+      scale: 0.95,
+      filter: 'blur(10px)'
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: { 
+        type: 'spring',
+        stiffness: 50,
+        damping: 20,
+        duration: 0.8 
+      } 
+    }
   };
 
   useEffect(() => {
     if (resultadosA || resultadosB) {
       setIsLoading(true);
       setHoraAnalisis(new Date().toLocaleTimeString());
+      setProbabilidadResult(null);
       const timer = setTimeout(() => setIsLoading(false), 600);
       return () => clearTimeout(timer);
     }
   }, [resultadosA, resultadosB]);
 
   useEffect(() => {
-    setGraficosImgs([]);
-    setGraficosImgsB([]);
+    if (modo === 'manual' && !resultadosA) {
+      setShowInputA(true);
+    }
+  }, [modo, resultadosA]);
+
+  useEffect(() => {
+    setImagenes({ a: [], b: [] });
+    setPdfPreparado(false);
   }, [probabilidadResult, resultadosA, resultadosB, comparar]);
 
-  const capturarGrafico = async (el) => {
-    if (!el) return null;
-    const originalStyle = el.style.cssText;
-    
-    // Ajuste de tamaño temporal para que Chart.js renderice todo
-    el.style.width = '1000px';
-    el.style.height = '600px';
-    el.style.padding = '40px';
-    
-    // Forzamos un pequeño retraso para el redibujado
-    await new Promise(r => setTimeout(r, 1200));
+  const capturarGrafico = async (elemento, intentos = 3) => {
+    console.log(`[PDF] Iniciando captura de elemento:`, elemento);
+    for (let i = 0; i < intentos; i++) {
+      try {
+        if (!elemento) throw new Error('Elemento nulo');
+        const canvas = elemento.querySelector('canvas');
+        if (!canvas) throw new Error('No hay canvas');
+        
+        if (canvas.width === 0 || canvas.height === 0) {
+          console.warn(`[PDF] Intento ${i + 1}: Canvas sin dimensiones, esperando...`);
+          await new Promise(resolve => setTimeout(resolve, 300));
+          continue;
+        }
 
-    try {
-      const img = await toPng(el, { 
-        pixelRatio: 2, // 2 es ideal para evitar imágenes negras por exceso de memoria
-        backgroundColor: '#162325',
-        skipFonts: true,
-        style: { margin: '0' }
-      });
-      return img;
-    } catch (e) {
-      console.error("Error capturando gráfico:", e);
-      return null;
-    } finally {
-      el.style.cssText = originalStyle;
+        const ctx = canvas.getContext('2d');
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const hasContent = pixels.some(channel => channel !== 0);
+        
+        if (!hasContent) {
+          console.warn(`[PDF] Intento ${i + 1}: Canvas vacío (sin píxeles), esperando...`);
+          await new Promise(resolve => setTimeout(resolve, 400));
+          continue;
+        }
+        
+        const dataUrlOriginal = canvas.toDataURL('image/png');
+        if (dataUrlOriginal && dataUrlOriginal.length > 1000) {
+          // Crear un canvas temporal para añadir fondo sólido (evita que elementos claros desaparezcan en el PDF blanco)
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          // Fondo oscuro similar al de la aplicación para mantener visibilidad de textos claros
+          tempCtx.fillStyle = '#162325';
+          tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+          tempCtx.drawImage(canvas, 0, 0);
+          
+          const dataUrl = tempCanvas.toDataURL('image/png');
+          console.log(`[PDF] Captura exitosa con fondo. Tamaño: ${dataUrl.length} caracteres.`);
+          return dataUrl;
+        }
+      } catch (error) {
+        console.warn(`[PDF] Intento ${i + 1} de captura fallido:`, error);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
+    return null;
   };
 
   const prepararPDF = async () => {
     setGenerando(true);
-    const tid = toast.loading('Capturando gráficas completas...');
+    setPdfPreparado(false);
+    const tid = toast.loading('Capturando gráficas en alta resolución...');
     try {
-      if (!chartsContainerRef.current) return;
-      const targets = chartsContainerRef.current.querySelectorAll('.sample-column-target');
+      if (!chartsContainerRef.current) throw new Error('Contenedor de gráficas no encontrado');
       
-      const imgsA = [];
-      const boxesA = targets[0]?.querySelectorAll('.chart-box') || [];
-      for (const b of boxesA) {
-        const img = await capturarGrafico(b);
-        if (img) imgsA.push(img);
+      let targets;
+      if (comparar) {
+        targets = Array.from(chartsContainerRef.current.querySelectorAll('.sample-column-target'));
+      } else {
+        targets = [chartsContainerRef.current];
       }
 
-      const imgsB = [];
+      console.log(`[PDF] Targets encontrados: ${targets.length}`);
+      if (targets.length === 0) throw new Error('No se encontraron los contenedores de gráficas');
+      
+      const capsA = [];
+      const boxesA = targets[0]?.querySelectorAll('.chart-box') || [];
+      for (const box of Array.from(boxesA)) {
+        const img = await capturarGrafico(box);
+        capsA.push(img);
+      }
+
+      const capsB = [];
       if (comparar && targets[1]) {
-        const boxesB = targets[1].querySelectorAll('.chart-box');
-        for (const b of boxesB) {
-          const img = await capturarGrafico(b);
-          if (img) imgsB.push(img);
+        const boxesB = targets[1].querySelectorAll('.chart-box') || [];
+        for (const box of Array.from(boxesB)) {
+          const img = await capturarGrafico(box);
+          capsB.push(img);
         }
       }
 
-      setGraficosImgs(imgsA);
-      setGraficosImgsB(imgsB);
-      toast.success('Reporte UHD listo', { id: tid });
+      console.log(`[PDF] Capturas finalizadas. A: ${capsA.filter(c => c).length}, B: ${capsB.filter(c => c).length}`);
+
+      if (capsA.filter(c => c).length === 0) {
+        throw new Error('No se pudieron capturar las gráficas de la muestra A');
+      }
+
+      setImagenes({ a: capsA, b: capsB });
+      setPdfPreparado(true);
+      toast.success('Reporte preparado correctamente', { id: tid });
     } catch (e) {
-      toast.error('Error al preparar captura', { id: tid });
+      console.error("[PDF] Error al preparar PDF:", e);
+      toast.error(e.message || 'Error al capturar las gráficas', { id: tid });
+      setPdfPreparado(false);
     } finally {
       setGenerando(false);
     }
@@ -134,7 +209,7 @@ const CalculosPage = ({
 
   const manejarEnvioCorreo = async (e) => {
     e.preventDefault();
-    if (!graficosImgs.length) {
+    if (!pdfPreparado) {
       toast.error('Primero debes preparar el PDF');
       return;
     }
@@ -143,9 +218,9 @@ const CalculosPage = ({
     try {
       const doc = <ReportePDF 
         datosA={resultadosA.datosOriginales} estadisticosA={resultadosA.estadisticos} 
-        frecuenciasA={resultadosA.frecuencias} graficosImgsA={graficosImgs} 
+        frecuenciasA={resultadosA.frecuencias} graficosImgsA={imagenes.a} 
         datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} 
-        frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={graficosImgsB} 
+        frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={imagenes.b} 
         comparar={comparar} probabilidadA={probabilidadResult} 
       />;
       const blob = await pdf(doc).toBlob();
@@ -166,31 +241,136 @@ const CalculosPage = ({
     }
   };
 
-  const manejarExportarExcel = async () => {
+  const manejarExportarExcel = async (target = 'A') => {
     setExportandoExcel(true);
     const tid = toast.loading('Generando Excel...');
     try {
-      const targets = chartsContainerRef.current.querySelectorAll('.sample-column-target');
+      let targets;
+      if (comparar) {
+        targets = Array.from(chartsContainerRef.current.querySelectorAll('.sample-column-target'));
+      } else {
+        targets = [chartsContainerRef.current];
+      }
+      
       const imgsA = [];
       const boxesA = targets[0]?.querySelectorAll('.chart-box') || [];
       for (const b of boxesA) imgsA.push(await capturarGrafico(b));
+      
       const imgsB = [];
       if (comparar && targets[1]) {
         const boxesB = targets[1].querySelectorAll('.chart-box');
         for (const b of boxesB) imgsB.push(await capturarGrafico(b));
       }
+      
       await excelExporter.exportar(resultadosA, resultadosB, imgsA, imgsB, comparar);
       toast.success('Excel descargado', { id: tid });
     } catch (e) { toast.error('Error en Excel', { id: tid }); } finally { setExportandoExcel(false); }
   };
 
   if (!resultadosA) {
-    return <EmptyState onManual={() => onClear()} onRandom={() => onRandom('A')} />;
+    return (
+      <div className="calculos-container-wrapper initial-entry" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        width: '100vw',
+        height: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 1500,
+        background: 'var(--color-bg)'
+      }}>
+        <AnimatePresence mode="wait">
+          {showInputA ? (
+            <motion.div 
+              key="input-form-a"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              className="overlay-content glass" 
+              style={{ 
+                maxWidth: '700px', 
+                width: '90%', 
+                padding: '3rem', 
+                position: 'relative',
+                maxHeight: '90vh',
+                overflowY: 'auto'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                <h3 style={{ color: 'var(--color-lime)', letterSpacing: '2px', fontWeight: '900' }}>📊 INGRESO DE DATOS - MUESTRA A</h3>
+                <button className="close-btn" onClick={() => { setShowInputA(false); onClear(); }}>×</button>
+              </div>
+              <InputForm 
+                onCalculate={(v) => {
+                  onCalculate(v, 'A');
+                  setShowInputA(false);
+                }} 
+                onRandom={() => onRandom('A')} 
+                error={error} 
+                onClearError={onClearError} 
+              />
+            </motion.div>
+          ) : (
+            <motion.div key="empty-state" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <EmptyState 
+                onManual={() => setShowInputA(true)} 
+                onRandom={() => onRandom('A')} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
   }
 
   return (
-    <div className={`calculos-container-wrapper ${modoPresentacion ? 'presentation-active' : ''}`}>
+    <div className={`calculos-container-wrapper ${isFullscreen ? 'presentation-active' : ''} ${!showSidebar ? 'sidebar-hidden' : ''}`}>
       
+      {!isFullscreen && (
+        <button 
+          className="toggle-sidebar-btn" 
+          onClick={onToggleSidebar}
+          style={{
+            position: 'fixed',
+            bottom: '120px',
+            left: showSidebar ? '260px' : '20px',
+            zIndex: 2000,
+            background: showSidebar ? 'rgba(6, 0, 16, 0.8)' : 'var(--color-lime)',
+            border: '1px solid var(--color-lime)',
+            color: showSidebar ? 'var(--color-lime)' : '#000',
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.4s ease',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+          }}
+          title={showSidebar ? "Ocultar Índice" : "Mostrar Índice"}
+        >
+          {showSidebar ? <VscArrowLeft size={20}/> : <VscListSelection size={20}/>}
+        </button>
+      )}
+
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="scroll-top-btn" 
+            onClick={scrollToTop}
+            title="Volver arriba"
+          >
+            <VscChevronUp size={24} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       <div className="floating-prefs no-print">
         <button className="action-btn-pill" onClick={() => setShowPrefs(!showPrefs)} title="Ajustes de visualización">
           <VscSettings />
@@ -216,7 +396,7 @@ const CalculosPage = ({
         )}
       </AnimatePresence>
 
-      {!modoPresentacion && (
+      {!isFullscreen && showSidebar && (
         <nav className="sticky-sidebar glass no-print">
           <div className="sidebar-header"><span>🔍</span><h3>ÍNDICE</h3></div>
           <ul className="sidebar-menu">
@@ -231,7 +411,12 @@ const CalculosPage = ({
         </nav>
       )}
 
-      <div className="main-scroll-content" ref={chartsContainerRef}>
+      <div className="main-scroll-content" style={{ 
+        width: (!isFullscreen && showSidebar) ? 'calc(100% - 300px)' : '100%',
+        padding: (!isFullscreen && showSidebar) ? '0 5% 3rem' : '0 10% 3rem',
+        flex: '1',
+        transition: 'all 0.4s ease'
+      }} ref={chartsContainerRef}>
         <header className="results-header-new glass">
           <div className="header-info">
             <h2>Análisis de Datos <span style={{fontSize:'0.8rem', color:'#888', fontWeight:'normal'}}>({horaAnalisis})</span></h2>
@@ -240,18 +425,46 @@ const CalculosPage = ({
               {resultadosB && <span className="sample-tag sample-b">B: {resultadosB.datosOriginales.length} datos</span>}
             </div>
           </div>
+          
           <div className="header-actions no-print">
-            <button className="action-btn-pill" onClick={() => setModoPresentacion(!modoPresentacion)}>
-              {modoPresentacion ? <><VscEyeClosed/> SALIR</> : <><VscScreenFull/> MODO TV</>}
-            </button>
-            <button className="action-btn-pill" onClick={() => setShowEmailModal(true)}><VscMail /> ENVIAR</button>
-            {!resultadosB && !showInputB && <button className="action-btn-pill compare-btn" onClick={()=>setShowInputB(true)}><VscDiffAdded/> COMPARAR</button>}
-            <button className="action-btn-pill excel-btn-new" onClick={manejarExportarExcel} disabled={exportandoExcel}>{exportandoExcel ? <Spinner size="14px"/> : '📊 EXCEL'}</button>
-            {graficosImgs.length > 0 ? (
-              <PDFDownloadLink document={<ReportePDF datosA={resultadosA.datosOriginales} estadisticosA={resultadosA.estadisticos} frecuenciasA={resultadosA.frecuencias} graficosImgsA={graficosImgs} datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={graficosImgsB} comparar={comparar} probabilidadA={probabilidadResult} />} fileName="reporte.pdf">
-                <button className="action-btn-pill pdf-btn-new"><VscFilePdf/> DESCARGAR PDF</button>
-              </PDFDownloadLink>
-            ) : <button className="action-btn-pill pdf-btn-prep" onClick={prepararPDF} disabled={generando}>{generando ? <Spinner size="14px"/> : <><VscFilePdf/> PREPARAR</>}</button>}
+            <div className="action-toolbar glass">
+              <button className="toolbar-btn" onClick={onToggleFullscreen} title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}>
+                {isFullscreen ? <><VscEyeClosed/> SALIR</> : <><VscScreenFull/> PANTALLA COMPLETA</>}
+              </button>
+              
+              <div className="toolbar-divider" />
+              
+              <button className="toolbar-btn" onClick={() => setShowEmailModal(true)} title="Enviar por correo">
+                <VscMail /> <span>ENVIAR</span>
+              </button>
+
+              {!resultadosB && !showInputB && (
+                <button className="toolbar-btn compare-btn" onClick={() => setShowInputB(true)} title="Comparar con otra muestra">
+                  <VscDiffAdded/> <span>COMPARAR</span>
+                </button>
+              )}
+
+              <button className="toolbar-btn excel-btn" onClick={manejarExportarExcel} disabled={exportandoExcel} title="Exportar a Excel">
+                {exportandoExcel ? <Spinner size="14px"/> : <><span style={{color: '#217346'}}>📊</span> EXCEL</>}
+              </button>
+
+              {pdfPreparado ? (
+                <PDFDownloadLink 
+                  document={<ReportePDF datosA={resultadosA.datosOriginales} estadisticosA={resultadosA.estadisticos} frecuenciasA={resultadosA.frecuencias} graficosImgsA={imagenes.a} datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={imagenes.b} comparar={comparar} probabilidadA={probabilidadResult} />} 
+                  fileName="reporte.pdf"
+                >
+                  {({ loading }) => (
+                    <button className="toolbar-btn pdf-btn" disabled={loading} title="Descargar PDF">
+                      {loading ? <Spinner size="14px"/> : <><VscFilePdf style={{color: '#ff4d4d'}}/> PDF</>}
+                    </button>
+                  )}
+                </PDFDownloadLink>
+              ) : (
+                <button className="toolbar-btn pdf-btn-prep" onClick={prepararPDF} disabled={generando} title="Preparar reporte PDF">
+                  {generando ? <Spinner size="14px"/> : <><VscFilePdf/> PREPARAR</>}
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
@@ -337,13 +550,17 @@ const CalculosPage = ({
               <div className="section-title centered"><h3>📊 ESTADÍSTICOS BÁSICOS</h3></div>
               <div className="zoom-container"><StatsGrid estadisticos={resultadosA.estadisticos} /></div>
             </motion.section>
-            <motion.section id="probabilidad" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>
+            <motion.section id="probabilidad" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true, amount: 0.3}}>
               <div className="section-title centered"><h3>🎯 ANÁLISIS DE PROBABILIDAD</h3></div>
-              <div className="zoom-container"><Probabilidad datos={resultadosA.datosOriginales} onResultadoChange={setProbabilidadResult} /></div>
+              <div className="zoom-container" style={{ maxWidth: '800px' }}>
+                <Probabilidad datos={resultadosA.datosOriginales} onResultadoChange={setProbabilidadResult} />
+              </div>
             </motion.section>
             <motion.section id="tabla" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>
               <div className="section-title centered"><h3>📋 TABLA DE DISTRIBUCIÓN</h3></div>
-              <div className="zoom-container"><TablaFrecuencias frecuencias={resultadosA.frecuencias} hoverIndex={hoverIndex} /></div>
+              <div className="zoom-container narrow-table-container">
+                <TablaFrecuencias frecuencias={resultadosA.frecuencias} hoverIndex={hoverIndex} />
+              </div>
             </motion.section>
             <motion.section id="tallo-hoja" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>
               <div className="section-title centered"><h3>🌿 DIAGRAMA DE TALLO Y HOJA</h3></div>
@@ -367,42 +584,77 @@ const CalculosPage = ({
 
       <style>{`
         .calculos-container-wrapper { display: flex; background: var(--color-bg); min-height: 100vh; width: 100%; transition: all 0.5s ease; }
-        .presentation-active .sticky-sidebar { display: none; }
-        .presentation-active .main-scroll-content { width: 100%; padding: 3rem 10%; }
+        .sidebar-hidden .sticky-sidebar { display: none !important; }
         
-        .sticky-sidebar { width: 300px; height: 100vh; position: sticky; top: 0; padding: 3rem 1.5rem; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; z-index: 100; }
+        .sticky-sidebar { width: 300px; height: 100vh; position: sticky; top: 0; padding: 3rem 1.5rem; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; z-index: 100; transition: transform 0.4s ease; }
         .sidebar-header h3 { font-size: 1.6rem; letter-spacing: 3px; color: var(--color-lime); font-weight: 900; }
         .sidebar-menu li { padding: 18px 25px; border-radius: 15px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 15px; transition: 0.3s; font-weight: bold; font-size: 1rem; margin-bottom: 12px; }
         .sidebar-menu li:hover { background: rgba(202, 244, 56, 0.15); color: var(--color-lime); transform: translateX(12px); }
         
-        .main-scroll-content { flex: 1; padding: 3rem 5%; width: calc(100% - 300px); }
-        .results-header-new { display: flex; justify-content: space-between; align-items: center; padding: 2rem 3.5rem; border-radius: 24px; margin-bottom: 5rem; }
-        .results-header-new h2 { font-size: 2.2rem; font-weight: 800; }
+        .main-scroll-content { flex: 1; transition: all 0.4s ease; }
+        .results-header-new { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+          padding: 1.5rem 3.5rem; 
+          border-radius: 30px; 
+          margin-top: 4rem;
+          margin-bottom: 6rem; 
+          background: rgba(6, 0, 16, 0.8);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .scroll-top-btn {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          width: 55px;
+          height: 55px;
+          border-radius: 50%;
+          background: var(--color-lime);
+          color: #000;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+          z-index: 1000;
+          transition: 0.3s;
+        }
+        .scroll-top-btn:hover { transform: translateY(-5px); background: #fff; }
+        
+        .results-section-card { 
+          margin-bottom: 8rem; 
+          padding: 2rem;
+          border-radius: 40px;
+          background: rgba(255, 255, 255, 0.01);
+          border: 1px solid rgba(255, 255, 255, 0.03);
+        }
         
         .zoom-container { max-width: 1250px; margin: 0 auto; width: 100%; }
+        .narrow-table-container { max-width: 850px !important; }
         .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; width: 100%; }
         .section-title h3 { font-size: 2.2rem; color: var(--color-lime); margin-bottom: 4rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; text-align: center; }
-        .label-a { color: var(--color-sky); border-left: 6px solid var(--color-blue); padding-left: 20px; margin-bottom: 2.5rem; text-transform: uppercase; }
-        .label-b { color: var(--color-lime); border-left: 6px solid var(--color-lime); padding-left: 20px; margin-bottom: 2.5rem; text-transform: uppercase; }
-        .action-btn-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 14px 30px; border-radius: 50px; cursor: pointer; font-weight: 800; display: flex; align-items: center; gap: 12px; }
-        .pdf-btn-new { background: var(--color-lime); color: #000; border: none; }
-        .back-home-btn { background: rgba(222,68,59,0.1); border: 1px solid var(--color-red); color: var(--color-red); padding: 18px; border-radius: 15px; font-weight: 900; margin-top: auto; }
-        .compare-input-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .overlay-content { background: #060010; padding: 3rem; border-radius: 30px; border: 1px solid var(--color-lime); width: 90%; max-width: 600px; }
-        .close-btn { background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
         
-        .floating-prefs { position: fixed; top: 100px; right: 30px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-        .prefs-panel { position: fixed; top: 160px; right: 30px; width: 250px; padding: 20px; z-index: 1000; border: 1px solid rgba(202, 244, 56, 0.3); border-radius: 20px; }
-        .pref-item { display: flex; alignItems: center; gap: 10px; cursor: pointer; margin-bottom: 10px; font-size: 0.85rem; }
+        /* Toolbar Styles */
+        .action-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); background: rgba(22, 35, 37, 0.6); }
+        .toolbar-btn { background: transparent; border: none; color: #fff; padding: 10px 15px; border-radius: 30px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; transition: 0.2s; white-space: nowrap; }
+        .toolbar-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: var(--color-lime); }
+        
+        @media (max-width: 1024px) {
+          .action-toolbar { border-radius: 20px; flex-wrap: wrap; justify-content: center; }
+          .results-header-new { padding: 1.5rem; flex-direction: column; gap: 1.5rem; text-align: center; }
+        }
 
+        .back-home-btn { background: rgba(222,68,59,0.1); border: 1px solid var(--color-red); color: var(--color-red); padding: 18px; border-radius: 15px; font-weight: 900; margin-top: auto; }
+        
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; color: black !important; }
           .calculos-container-wrapper { display: block !important; }
           .main-scroll-content { width: 100% !important; padding: 0 !important; }
-          .glass { border: none !important; background: none !important; box-shadow: none !important; backdrop-filter: none !important; }
-          .results-section-card { page-break-inside: avoid; }
-          .section-title h3 { color: #000 !important; border-bottom: 2px solid #000; }
         }
       `}</style>
     </div>

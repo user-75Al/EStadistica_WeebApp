@@ -15,6 +15,7 @@ const PillNav = ({
   hoveredPillTextColor = '#060010',
   pillTextColor,
   onMobileMenuClick,
+  onLogoClick,
   initialLoadAnimation = true
 }) => {
   const resolvedPillTextColor = pillTextColor ?? baseColor;
@@ -225,32 +226,17 @@ const PillNav = ({
   return (
     <div className="pill-nav-container">
       <nav className={`pill-nav ${className}`} aria-label="Primary" style={cssVars}>
-        {isRouterLink(items?.[0]?.href) ? (
-          <Link
-            className="pill-logo"
-            to={items[0].href}
-            aria-label="Home"
-            onMouseEnter={handleLogoEnter}
-            role="menuitem"
-            ref={el => {
-              logoRef.current = el;
-            }}
-          >
-            <img src={logo} alt={logoAlt} ref={logoImgRef} />
-          </Link>
-        ) : (
-          <a
-            className="pill-logo"
-            href={items?.[0]?.href || '#'}
-            aria-label="Home"
-            onMouseEnter={handleLogoEnter}
-            ref={el => {
-              logoRef.current = el;
-            }}
-          >
-            <img src={logo} alt={logoAlt} ref={logoImgRef} />
-          </a>
-        )}
+        <div 
+          className="pill-logo" 
+          onClick={onLogoClick} 
+          onMouseEnter={handleLogoEnter}
+          style={{ cursor: 'pointer' }}
+          ref={el => {
+            logoRef.current = el;
+          }}
+        >
+          <img src={logo} alt={logoAlt} ref={logoImgRef} />
+        </div>
 
         <div className="pill-nav-items desktop-only" ref={navItemsRef}>
           <ul className="pill-list" role="menubar">

@@ -1,214 +1,410 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 
+const styles = StyleSheet.create({
+  page: { 
+    padding: 40, 
+    fontFamily: 'Helvetica', 
+    backgroundColor: '#FFFFFF',
+    color: '#162325'
+  },
+  header: { 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25, 
+    borderBottomWidth: 3, 
+    borderBottomColor: '#1E3A5F', 
+    paddingBottom: 15 
+  },
+  headerLeft: {
+    flexDirection: 'column'
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: '#1E3A5F', 
+    letterSpacing: 1
+  },
+  subtitle: {
+    fontSize: 9,
+    color: '#666',
+    marginTop: 4,
+    textTransform: 'uppercase'
+  },
+  headerRight: {
+    textAlign: 'right'
+  },
+  dateText: { 
+    fontSize: 8, 
+    color: '#888' 
+  },
+
+  sectionTitle: { 
+    fontSize: 12, 
+    fontWeight: 'bold', 
+    color: '#FFFFFF', 
+    backgroundColor: '#1E3A5F',
+    padding: 6,
+    marginBottom: 15, 
+    textTransform: 'uppercase', 
+    textAlign: 'left',
+    width: '100%'
+  },
+  
+  // Layout
+  dualRow: { 
+    flexDirection: 'row', 
+    gap: 20,
+    marginBottom: 20
+  },
+  column: { 
+    flex: 1 
+  },
+  colHeader: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    paddingBottom: 5,
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE'
+  },
+  colA: { color: '#006BB4', borderBottomColor: '#006BB4' },
+  colB: { color: '#749c00', borderBottomColor: '#749c00' },
+
+  // Stats Grid
+  statsGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 6
+  },
+  statCard: { 
+    width: '48%', 
+    padding: 8, 
+    backgroundColor: '#F8F9FA', 
+    borderLeftWidth: 3,
+    borderLeftStyle: 'solid', 
+    marginBottom: 4,
+    borderRadius: 2
+  },
+  statCardA: { borderLeftColor: '#006BB4' },
+  statCardB: { borderLeftColor: '#749c00' },
+  statLabel: { 
+    fontSize: 6, 
+    color: '#888', 
+    fontWeight: 'bold',
+    marginBottom: 2
+  },
+  statValue: { 
+    fontSize: 10, 
+    fontWeight: 'bold',
+    color: '#162325' 
+  },
+  
+  // Stem & Leaf
+  slContainer: { 
+    padding: 10, 
+    backgroundColor: '#F1F3F5', 
+    borderRadius: 4
+  },
+  slRow: { 
+    flexDirection: 'row', 
+    paddingVertical: 2,
+    alignItems: 'center'
+  },
+  slStem: { 
+    width: 25, 
+    fontWeight: 'bold', 
+    textAlign: 'right', 
+    paddingRight: 8, 
+    borderRightWidth: 2, 
+    borderRightColor: '#CAF438', 
+    fontSize: 9,
+    color: '#1E3A5F'
+  },
+  slLeaf: { 
+    paddingLeft: 8, 
+    letterSpacing: 2, 
+    fontFamily: 'Courier', 
+    fontSize: 9,
+    color: '#444'
+  },
+  
+  // MODERN CHART SECTION
+  chartWrapper: {
+    marginBottom: 30,
+    padding: 15,
+    backgroundColor: '#FBFBFC',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F0F0F0'
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#CAF438',
+    paddingLeft: 10
+  },
+  chartTitle: { 
+    fontSize: 13, 
+    fontWeight: 'bold', 
+    color: '#1E3A5F'
+  },
+  chartLayout: {
+    flexDirection: 'row',
+    gap: 15
+  },
+  chartImageContainer: {
+    flex: 1,
+    backgroundColor: '#162325', // Fondo oscuro para que resalten las gráficas UHD
+    borderRadius: 6,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  chartImage: { 
+    width: '100%', 
+    height: 180, 
+    objectFit: 'contain' 
+  },
+  chartLabel: {
+    fontSize: 7,
+    color: '#EEE',
+    marginBottom: 5,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1
+  },
+  chartDescContainer: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#EEE'
+  },
+  chartDesc: { 
+    fontSize: 8, 
+    color: '#555', 
+    lineHeight: 1.5, 
+    textAlign: 'justify'
+  },
+  
+  // Probability
+  probBox: { 
+    padding: 15, 
+    backgroundColor: '#E9ECEF', 
+    borderLeftWidth: 5, 
+    borderLeftColor: '#006BB4', 
+    marginTop: 10,
+    borderRadius: 4
+  },
+  probTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#006BB4',
+    marginBottom: 5
+  },
+  probValue: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    color: '#1E3A5F'
+  },
+  probSpace: {
+    marginTop: 8,
+    fontSize: 7,
+    color: '#666',
+    fontFamily: 'Courier'
+  },
+
+  footer: { 
+    position: 'absolute', 
+    bottom: 25, 
+    left: 40, 
+    right: 40, 
+    textAlign: 'center', 
+    fontSize: 8, 
+    color: '#BBB',
+    borderTopWidth: 1,
+    borderTopColor: '#EEE',
+    paddingTop: 10
+  }
+});
+
 const chartMeta = [
   { 
-    title: "1. Histograma y Polígono de Frecuencias", 
-    desc: "El Histograma es la representación gráfica por excelencia para el análisis de variables continuas y discretas. Nos permite visualizar la distribución de la frecuencia absoluta (fi), identificando instantáneamente la 'forma' de los datos. El Polígono de frecuencias, superpuesto sobre las barras, facilita la detección de tendencias y la continuidad del fenómeno. Una distribución acampanada sugiere normalidad, mientras que desplazamientos hacia los extremos indican sesgos positivos o negativos, fundamentales para entender si los procesos están bajo control o presentan anomalías estructurales." 
+    title: "DISTRIBUCIÓN DE FRECUENCIAS Y POLÍGONO (HISTOGRAMA)", 
+    desc: "Utilidad: Permite visualizar la morfología de la distribución, identificando la tendencia central y la dispersión. \nInterpretación: Observe las barras más altas para identificar las clases con mayor densidad de datos. El polígono de frecuencias superpuesto facilita la detección de asimetrías (sesgo a la derecha o izquierda) y la uniformidad de la muestra analizada." 
   },
   { 
-    title: "2. Curva de Frecuencia Acumulada (Ojiva)", 
-    desc: "La Ojiva es una herramienta técnica vital para el análisis de cuantiles y percentiles. A diferencia de las frecuencias absolutas, la Ojiva muestra cómo se acumulan los datos a medida que recorremos la escala de valores. Una pendiente pronunciada revela los intervalos donde se concentra la mayor densidad de la población, mientras que tramos horizontales indican ausencia de datos. Es indispensable para determinar qué porcentaje de la muestra se encuentra por debajo de un valor crítico, permitiendo realizar cortes estadísticos precisos (ej. el 50% de los datos es menor a 'x')." 
+    title: "ANÁLISIS DE ACUMULACIÓN LINEAL (CURVA DE OJIVA)", 
+    desc: "Utilidad: Esta gráfica representa el crecimiento acumulativo de las frecuencias relativas. \nInterpretación: Es fundamental para el cálculo visual de percentiles. Una pendiente pronunciada indica un rango de valores donde se acumula una gran cantidad de datos en un intervalo corto, mientras que una meseta refleja zonas de baja frecuencia o ausencia de datos." 
   },
   { 
-    title: "3. Diagrama de Pareto (Análisis de Importancia)", 
-    desc: "Basado en el principio de Vilfredo Pareto, este gráfico prioriza los valores según su impacto. Al ordenar las categorías de mayor a menor frecuencia absoluta, acompañadas por la línea de porcentaje acumulado, permite separar los 'pocos vitales' de los 'muchos triviales'. Es la herramienta de gestión más poderosa para la toma de decisiones, ya que revela el 20% de las causas que suelen generar el 80% de los efectos observados. En este reporte, nos ayuda a identificar cuáles son los valores dominantes que definen el comportamiento general de la muestra." 
+    title: "PRIORIZACIÓN ESTADÍSTICA (DIAGRAMA DE PARETO)", 
+    desc: "Utilidad: Aplica el principio de Vilfredo Pareto (80/20) para separar los elementos 'vitales' de los 'triviales'. \nInterpretación: Las barras ordenadas de mayor a menor frecuencia, junto con la curva de porcentaje acumulado, permiten identificar qué conjunto de valores específicos representa el 80% del impacto total de la muestra, optimizando la toma de decisiones." 
   },
   { 
-    title: "4. Distribución Sectorial Proporcional (Top 5)", 
-    desc: "Este gráfico de sectores analiza la representatividad proporcional de los elementos más destacados frente a la totalidad del conjunto. Permite entender de un vistazo qué tan concentrada está la muestra. Si un solo sector ocupa una gran parte del pastel, estamos ante un fenómeno de alta dominancia; si los sectores son de tamaños similares, la muestra presenta una diversidad uniforme. Es ideal para reportes ejecutivos donde se necesita visualizar la jerarquía de las categorías y su peso relativo en el ecosistema total de datos analizados." 
+    title: "SEGMENTACIÓN PROPORCIONAL (TOP 5 DOMINANTE)", 
+    desc: "Utilidad: Visualiza la representatividad porcentual de los valores más recurrentes respecto al universo total. \nInterpretación: Ideal para determinar la dominancia de mercado o frecuencia. Cada sector circular cuantifica el peso relativo de los datos; un sector que supere el 25% indica una concentración significativa del valor sobre el resto de la muestra." 
   }
 ];
 
-const styles = StyleSheet.create({
-  page: { padding: 45, fontFamily: 'Helvetica', fontSize: 10, color: '#333' },
-  header: { marginBottom: 20, borderBottom: 2, borderBottomColor: '#1E3A5F', paddingBottom: 10 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#1E3A5F', textTransform: 'uppercase', textAlign: 'center' },
-  subtitle: { fontSize: 10, color: '#666', marginTop: 4, textAlign: 'center' },
-  section: { marginBottom: 25 },
-  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: '#006BB4', marginBottom: 12, textTransform: 'uppercase', textAlign: 'center', backgroundColor: '#f0f4f8', padding: 5 },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20, justifyContent: 'center' },
-  statCard: { width: '23%', padding: 8, backgroundColor: '#f0f4f8', borderRadius: 4, alignItems: 'center' },
-  statLabel: { fontSize: 8, color: '#555', marginBottom: 2 },
-  statValue: { fontSize: 11, fontWeight: 'bold', color: '#1E3A5F' },
-  slContainer: { marginTop: 5, padding: 12, backgroundColor: '#fafafa', borderLeft: 4, borderLeftColor: '#caf438', marginBottom: 10 },
-  slRow: { flexDirection: 'row', marginBottom: 3 },
-  slStem: { width: 35, fontWeight: 'bold', borderRightWidth: 1, borderRightColor: '#ccc', textAlign: 'right', paddingRight: 10, fontSize: 10 },
-  slLeaf: { paddingLeft: 10, letterSpacing: 3, fontFamily: 'Courier', fontSize: 10 },
-  probBox: { backgroundColor: '#f0f4f8', padding: 15, borderRadius: 5, borderLeft: 4, borderLeftColor: '#1E3A5F', marginBottom: 10 },
-  monoText: { fontSize: 8, fontFamily: 'Courier', color: '#666', marginTop: 5, backgroundColor: '#f5f5f5', padding: 10 },
-  treeContainer: { marginVertical: 15, padding: 15, border: 1, borderColor: '#eee', borderRadius: 10, alignItems: 'center' },
-  treeLine: { width: 2, backgroundColor: '#1E3A5F', height: 20 },
-  treeNode: { padding: 5, backgroundColor: '#1E3A5F', color: '#fff', borderRadius: 5, fontSize: 9, minWidth: 80, textAlign: 'center' },
-  treeBranch: { flexDirection: 'row', justifyContent: 'center', gap: 40, marginTop: 10 },
-  treeLeaf: { padding: 8, border: 1, borderColor: '#006BB4', borderRadius: 5, fontSize: 8, alignItems: 'center', minWidth: 100 },
-  table: { display: 'table', width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#bfbfbf' },
-  tableRow: { flexDirection: 'row', minHeight: 25, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  tableHeader: { backgroundColor: '#1E3A5F' },
-  tableHeaderText: { color: '#fff', fontWeight: 'bold', fontSize: 10 },
-  tableCell: { width: '20%', textAlign: 'center', fontSize: 10 },
-  chartBlock: { marginBottom: 35, padding: 10 },
-  chartImage: { width: '100%', height: 280, objectFit: 'contain', marginVertical: 12 },
-  chartTitle: { fontSize: 14, fontWeight: 'bold', color: '#1E3A5F', marginBottom: 8, textAlign: 'center' },
-  chartDesc: { fontSize: 9.5, color: '#2c3e50', lineHeight: 1.6, textAlign: 'justify', backgroundColor: '#f9f9f9', padding: 15, borderRadius: 5, borderLeft: 3, borderLeftColor: '#006BB4' },
-  footer: { position: 'absolute', bottom: 30, left: 50, right: 50, textAlign: 'center', color: '#999', fontSize: 8 }
-});
-
 const getStemLeafData = (datos) => {
-  if (!datos) return [];
+  if (!datos || datos.length === 0) return [];
   const sorted = [...datos].sort((a, b) => a - b);
-  const groups = {};
+  const grupos = {};
+
   sorted.forEach(num => {
-    const tallo = Math.floor(Math.abs(num) / 10);
-    const hoja = Math.abs(num) % 10;
-    if (!groups[tallo]) groups[tallo] = [];
-    groups[tallo].push(hoja);
+    let tallo, hoja;
+    if (Number.isInteger(num)) {
+      tallo = Math.floor(Math.abs(num) / 10);
+      if (num < 0) tallo = -tallo;
+      hoja = Math.abs(num) % 10;
+    } else {
+      tallo = Math.floor(num);
+      hoja = Math.round((num - tallo) * 10);
+    }
+    if (!grupos[tallo]) grupos[tallo] = [];
+    grupos[tallo].push(hoja);
   });
-  return Object.entries(groups).map(([t, h]) => ({ tallo: t, hojas: h.join(' ') }));
+
+  return Object.entries(grupos)
+    .map(([stem, leaves]) => ({ 
+      stem, 
+      leaves: leaves.sort((a, b) => a - b).join(' ') 
+    }))
+    .sort((a, b) => parseInt(a.stem) - parseInt(b.stem));
 };
 
 const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB, estadisticosB, frecuenciasB, graficosImgsB, comparar, probabilidadA }) => {
-  const fecha = new Date().toLocaleDateString();
-  
-  if (comparar && estadisticosB) {
-    return (
-      <Document title="Reporte Estadístico Comparativo">
-        <Page size="A4" style={styles.page}>
-          <View style={styles.header}><Text style={styles.title}>Reporte Comparativo A vs B</Text><Text style={styles.subtitle}>{fecha}</Text></View>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>1. Medidas Comparativas</Text>
-            <View style={{flexDirection:'row', gap:20}}>
-              <View style={{flex:1}}>
-                <Text style={{backgroundColor:'#1E3A5F', color:'#fff', padding:3, textAlign:'center', fontSize:9}}>MUESTRA A</Text>
-                {Object.entries(estadisticosA).map(([k,v]) => (
-                  <View key={k} style={{flexDirection:'row', justifyContent:'space-between', borderBottomWidth:0.2, paddingVertical:3}}>
-                    <Text style={{fontSize:8}}>{k}:</Text><Text style={{fontSize:8, fontWeight:'bold'}}>{Array.isArray(v)?v.join(','):v}</Text>
-                  </View>
-                ))}
-              </View>
-              <View style={{flex:1}}>
-                <Text style={{backgroundColor:'#2ecc71', color:'#fff', padding:3, textAlign:'center', fontSize:9}}>MUESTRA B</Text>
-                {Object.entries(estadisticosB).map(([k,v]) => (
-                  <View key={k} style={{flexDirection:'row', justifyContent:'space-between', borderBottomWidth:0.2, paddingVertical:3}}>
-                    <Text style={{fontSize:8}}>{k}:</Text><Text style={{fontSize:8, fontWeight:'bold'}}>{Array.isArray(v)?v.join(','):v}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>2. Comparativa Visual</Text>
-            {graficosImgsA.slice(0, 4).map((img, i) => (
-              <View key={i} style={{ marginBottom: 20 }} wrap={false}>
-                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#1E3A5F', marginBottom: 5, textAlign: 'center' }}>{chartMeta[i]?.title}</Text>
-                <View style={{flexDirection:'row', gap:15}}>
-                  <View style={{flex:1}}><Image src={img} style={{ height: 140 }} /></View>
-                  {graficosImgsB[i] && <View style={{flex:1}}><Image src={graficosImgsB[i]} style={{ height: 140 }} /></View>}
-                </View>
-              </View>
-            ))}
-          </View>
-          <Text style={styles.footer} fixed>Página 1</Text>
-        </Page>
-      </Document>
-    );
-  }
+  const fecha = new Date().toLocaleString();
+  const slA = getStemLeafData(datosA);
+  const slB = getStemLeafData(datosB);
 
-  const slDataUnique = getStemLeafData(datosA);
-  const espacioMuestralUnique = [...new Set(datosA)].sort((a, b) => a - b);
+  const renderStats = (estadisticos, type = 'A') => (
+    <View style={styles.statsGrid}>
+      {Object.entries(estadisticos).map(([k, v]) => (
+        <View key={k} style={[styles.statCard, type === 'A' ? styles.statCardA : styles.statCardB]}>
+          <Text style={styles.statLabel}>{k.toUpperCase()}</Text>
+          <Text style={styles.statValue}>{Array.isArray(v) ? v.join(', ') : v}</Text>
+        </View>
+      ))}
+    </View>
+  );
+
+  const renderStemLeaf = (slData) => (
+    <View style={styles.slContainer}>
+      {slData.length > 0 ? slData.map((row, i) => (
+        <View key={i} style={styles.slRow}>
+          <Text style={styles.slStem}>{row.stem}</Text>
+          <Text style={styles.slLeaf}>{row.leaves}</Text>
+        </View>
+      )) : <Text style={{fontSize: 8, color: '#999'}}>No hay datos disponibles</Text>}
+    </View>
+  );
 
   return (
-    <Document title="Reporte Estadístico Profesional">
+    <Document>
+      {/* PÁGINA 1: RESUMEN ANALÍTICO */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}><Text style={styles.title}>Reporte Estadístico Detallado</Text><Text style={styles.subtitle}>Análisis de Muestra Única | {fecha}</Text></View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>I. Medidas Estadísticas</Text>
-          <View style={styles.statsGrid}>
-            {[
-              ['Media', estadisticosA.media], ['Mediana', estadisticosA.mediana], ['Moda', Array.isArray(estadisticosA.moda) ? estadisticosA.moda.join(', ') : estadisticosA.moda],
-              ['Mínimo', estadisticosA.min], ['Máximo', estadisticosA.max], ['Desviación', estadisticosA.desviacion],
-              ['Varianza', estadisticosA.varianza], ['Rango', estadisticosA.rango], ['Total (N)', datosA.length]
-            ].map(([l, v]) => (
-              <View key={l} style={styles.statCard}><Text style={styles.statLabel}>{l}</Text><Text style={styles.statValue}>{v}</Text></View>
-            ))}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>ANALYTICS REPORT</Text>
+            <Text style={styles.subtitle}>{comparar ? 'Comparativa Avanzada de Muestras' : 'Análisis Estadístico Profesional'}</Text>
           </View>
-        </View>
-        
-        <View style={styles.section} wrap={false}>
-          <Text style={styles.sectionTitle}>II. Diagrama de Tallo y Hoja</Text>
-          <View style={styles.slContainer}>
-            {slDataUnique.slice(0, 15).map((row, i) => (
-              <View key={i} style={styles.slRow}>
-                <Text style={styles.slStem}>{row.tallo}</Text>
-                <Text style={styles.slLeaf}>{row.hojas}</Text>
-              </View>
-            ))}
+          <View style={styles.headerRight}>
+            <Text style={styles.dateText}>Generado el {fecha}</Text>
+            <Text style={[styles.dateText, {marginTop: 2}]}>Software V2.5 UHD</Text>
           </View>
         </View>
 
-        {probabilidadA && probabilidadA.favorables !== undefined && (
-          <View style={styles.section} wrap={false}>
-            <Text style={styles.sectionTitle}>III. Análisis de Probabilidad y Árbol</Text>
+        <Text style={styles.sectionTitle}>I. Métricas Descriptivas</Text>
+        <View style={styles.dualRow}>
+          <View style={styles.column}>
+            <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
+            {renderStats(estadisticosA, 'A')}
+          </View>
+          {comparar && (
+            <View style={styles.column}>
+              <Text style={[styles.colHeader, styles.colB]}>MUESTRA B</Text>
+              {renderStats(estadisticosB, 'B')}
+            </View>
+          )}
+        </View>
+
+        <Text style={styles.sectionTitle}>II. Análisis de Distribución (Tallo y Hoja)</Text>
+        <View style={styles.dualRow}>
+          <View style={styles.column}>
+            <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
+            {renderStemLeaf(slA)}
+          </View>
+          {comparar && (
+            <View style={styles.column}>
+              <Text style={[styles.colHeader, styles.colB]}>MUESTRA B</Text>
+              {renderStemLeaf(slB)}
+            </View>
+          )}
+        </View>
+
+        {probabilidadA && (
+          <View style={{marginTop: 10}}>
+            <Text style={styles.sectionTitle}>III. Análisis Probabilístico</Text>
             <View style={styles.probBox}>
-              <Text style={{ fontWeight: 'bold', fontSize: 11 }}>Evento: {probabilidadA.condicion}</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
-                <Text style={{ fontSize: 9 }}>Favorables: {probabilidadA.favorables} | Total: {probabilidadA.total}</Text>
-                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#006BB4' }}>P(E) = {probabilidadA.porcentaje}%</Text>
-              </View>
+              <Text style={styles.probTitle}>Evento Calculado (Muestra A): {probabilidadA.condicion}</Text>
+              <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
+              <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + [...new Set(datosA)].sort((a,b)=>a-b).join(', ') + " }"}</Text>
             </View>
-            
-            <View style={styles.treeContainer}>
-              <Text style={{ fontSize: 8, color: '#666', marginBottom: 5 }}>Diagrama de Árbol del Evento</Text>
-              <View style={styles.treeNode}><Text>Inicio</Text></View>
-              <View style={styles.treeLine} />
-              <View style={styles.treeBranch}>
-                <View style={styles.treeLeaf}>
-                  <Text style={{ color: '#006BB4', fontWeight: 'bold' }}>Cumple</Text>
-                  <Text style={{ fontSize: 7 }}>n = {probabilidadA.favorables}</Text>
-                  <Text style={{ fontSize: 10, fontWeight: 'bold' }}>{probabilidadA.porcentaje}%</Text>
-                </View>
-                <View style={styles.treeLeaf}>
-                  <Text style={{ color: '#DE443B', fontWeight: 'bold' }}>No Cumple</Text>
-                  <Text style={{ fontSize: 7 }}>n = {probabilidadA.total - probabilidadA.favorables}</Text>
-                  <Text style={{ fontSize: 10, fontWeight: 'bold' }}>{(100 - parseFloat(probabilidadA.porcentaje)).toFixed(2)}%</Text>
-                </View>
-              </View>
-            </View>
-
-            <Text style={{ fontSize: 9, fontWeight: 'bold', marginTop: 5 }}>Espacio Muestral (S):</Text>
-            <Text style={styles.monoText}>S = {"{ "}{espacioMuestralUnique.join(', ')}{" }"}</Text>
           </View>
         )}
-        <Text style={styles.footer} fixed>Página 1</Text>
+        
+        <Text style={styles.footer} fixed>Página 1 | Reporte Estadístico UHD</Text>
       </Page>
 
+      {/* PÁGINA 2: VISUALIZACIÓN GRÁFICA */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>IV. Tabla de Distribución de Frecuencias</Text>
-        <View style={styles.table}>
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            {['Valor (x)', 'fi', 'fr', 'Fi', 'Fr'].map(h => (<View key={h} style={styles.tableCell}><Text style={styles.tableHeaderText}>{h}</Text></View>))}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>VISUAL ANALYTICS</Text>
+            <Text style={styles.subtitle}>Representación Gráfica en Alta Resolución</Text>
           </View>
-          {frecuenciasA.map((row, i) => (
-            <View key={i} style={styles.tableRow}>
-              {['valor', 'fi', 'fr', 'Fi', 'Fr'].map(k => (
-                <View key={k} style={styles.tableCell}><Text>{row[k]}</Text></View>
-              ))}
-            </View>
-          ))}
         </View>
-        <Text style={styles.footer} fixed>Página 2</Text>
-      </Page>
 
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>V. Análisis Visual Interpretativo</Text>
-        {graficosImgsA.map((img, i) => (
-          <View key={i} style={styles.chartBlock} wrap={false}>
-            <Text style={styles.chartTitle}>{chartMeta[i]?.title}</Text>
-            <Image src={img} style={styles.chartImage} />
-            <View style={styles.chartDesc}><Text>{chartMeta[i]?.desc}</Text></View>
+        {graficosImgsA && graficosImgsA.length > 0 ? (
+          graficosImgsA.map((img, i) => (
+            <View key={i} style={styles.chartWrapper} wrap={false}>
+              <View style={styles.chartHeader}>
+                <Text style={styles.chartTitle}>{chartMeta[i]?.title || `GRÁFICO ANALÍTICO ${i + 1}`}</Text>
+              </View>
+              
+              <View style={styles.chartLayout}>
+                <View style={styles.chartImageContainer}>
+                  <Text style={styles.chartLabel}>Muestra A</Text>
+                  {img && <Image src={img} style={styles.chartImage} />}
+                </View>
+                
+                {comparar && graficosImgsB && graficosImgsB[i] && (
+                  <View style={styles.chartImageContainer}>
+                    <Text style={styles.chartLabel}>Muestra B</Text>
+                    <Image src={graficosImgsB[i]} style={styles.chartImage} />
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.chartDescContainer}>
+                <Text style={styles.chartDesc}>
+                  {chartMeta[i]?.desc || "Interpretación técnica no disponible para este módulo gráfico."}
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <View style={{padding: 40, textAlign: 'center'}}>
+            <Text style={{color: '#999', fontSize: 12}}>No se capturaron visualizaciones para este reporte.</Text>
           </View>
-        ))}
-        <Text style={styles.footer} fixed>Página 3</Text>
+        )}
+        
+        <Text style={styles.footer} fixed>Página 2 | Reporte Estadístico UHD</Text>
       </Page>
     </Document>
   );
