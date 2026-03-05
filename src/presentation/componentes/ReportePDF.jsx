@@ -1,5 +1,5 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Link } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import { generateInsights, generateComparativeAI } from '../utils/insightGenerator';
 
 const styles = StyleSheet.create({
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   }, 
   tableRow: { 
     flexDirection: "row",
-    minHeight: 20,
+    minHeight: 22,
     alignItems: 'center'
   }, 
   tableColHeader: { 
@@ -359,7 +359,7 @@ const getStemLeafData = (datos) => {
     .sort((a, b) => parseInt(a.stem) - parseInt(b.stem));
 };
 
-const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], graficosImgsA = [], datosB = [], estadisticosB = {}, frecuenciasB = [], graficosImgsB = [], comparar, probabilidadA }) => {
+const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], graficosImgsA = [], datosB = [], estadisticosB = {}, frecuenciasB = [], graficosImgsB = [], comparar, probabilidadA, probabilidadB }) => {
   const fecha = new Date().toLocaleString();
   const slA = getStemLeafData(datosA);
   const slB = getStemLeafData(datosB);
@@ -380,8 +380,8 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
   );
 
   const renderFrequencyTable = (frecuencias) => (
-    <View style={styles.table}> 
-      <View style={styles.tableRow}> 
+    <View style={styles.table} wrap={true}> 
+      <View style={styles.tableRow} wrap={false}> 
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>xᵢ</Text></View> 
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>fᵢ</Text></View> 
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>fᵣ</Text></View> 
@@ -390,7 +390,7 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
         <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Fᵣ%</Text></View> 
       </View>
       {Array.isArray(frecuencias) && frecuencias.length > 0 ? frecuencias.map((row, i) => (
-        <View key={i} style={styles.tableRow}> 
+        <View key={i} style={styles.tableRow} wrap={false}> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.valor}</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fi}</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fr}</Text></View> 
@@ -398,14 +398,14 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
           <View style={styles.tableCol}><Text style={styles.tableCell}>{row.Fi}</Text></View> 
           <View style={styles.tableCol}><Text style={styles.tableCell}>{(Number(row.Fr || 0) * 100).toFixed(2)}%</Text></View> 
         </View>
-      )) : <View style={styles.tableRow}><Text style={styles.tableCell}>No hay datos</Text></View>}
+      )) : <View style={styles.tableRow} wrap={false}><Text style={styles.tableCell}>No hay datos</Text></View>}
     </View>
   );
 
   const renderStemLeaf = (slData) => (
     <View style={styles.slContainer}>
       {Array.isArray(slData) && slData.length > 0 ? slData.map((row, i) => (
-        <View key={i} style={styles.slRow}>
+        <View key={i} style={styles.slRow} wrap={false}>
           <Text style={styles.slStem}>{row.stem}</Text>
           <Text style={styles.slLeaf}>{row.leaves}</Text>
         </View>
@@ -414,6 +414,7 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
   );
 
   const espacioMuestralA = Array.isArray(datosA) ? [...new Set(datosA)].sort((a,b)=>a-b).join(', ') : '';
+  const espacioMuestralB = Array.isArray(datosB) ? [...new Set(datosB)].sort((a,b)=>a-b).join(', ') : '';
 
   return (
     <Document>
@@ -511,29 +512,36 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
         </Page>
       )}
 
-      {/* SECCIÓN: TABLAS DE FRECUENCIA */}
+      {/* SECCIÓN: TABLAS DE FRECUENCIA - MUESTRA A */}
       <Page size="A4" style={styles.page}>
         <View>
-          <Text style={styles.sectionTitle}>{comparar ? 'IV' : 'III'}. Tablas de Distribución de Frecuencias</Text>
+          <Text style={styles.sectionTitle}>{comparar ? 'IV. Tablas de Frecuencia - Muestra A' : 'III. Tablas de Distribución de Frecuencias'}</Text>
         </View>
-        <View style={{ marginBottom: 20 }}>
-          <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
+        <View wrap={true}>
           {renderFrequencyTable(frecuenciasA)}
         </View>
-        {comparar && (
-          <View>
-            <Text style={[styles.colHeader, styles.colB]}>MUESTRA B</Text>
-            {renderFrequencyTable(frecuenciasB)}
-          </View>
-        )}
         <Text style={styles.footer} fixed>Página {comparar ? '4' : '3'} | Reporte Estadístico UHD</Text>
       </Page>
 
+      {/* SECCIÓN: TABLAS DE FRECUENCIA - MUESTRA B */}
+      {comparar && (
+        <Page size="A4" style={styles.page}>
+          <View>
+            <Text style={[styles.sectionTitle, { backgroundColor: '#749c00' }]}>V. Tablas de Frecuencia - Muestra B</Text>
+          </View>
+          <View wrap={true}>
+            {renderFrequencyTable(frecuenciasB)}
+          </View>
+          <Text style={styles.footer} fixed>Página 5 | Reporte Estadístico UHD</Text>
+        </Page>
+      )}
+
       {/* SECCIÓN: DISTRIBUCIÓN Y PROBABILIDAD */}
       <Page size="A4" style={styles.page}>
-        <View>
-          <Text style={styles.sectionTitle}>{comparar ? 'V' : 'IV'}. Análisis de Distribución (Tallo y Hoja)</Text>
+        <View id="section-dist">
+          <Text style={styles.sectionTitle}>{comparar ? 'VI' : 'IV'}. Análisis de Distribución y Probabilidad</Text>
         </View>
+        
         <View style={styles.dualRow}>
           <View style={styles.column}>
             <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
@@ -547,23 +555,40 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
           )}
         </View>
 
-        {probabilidadA && (
-          <View style={{marginTop: 20}}>
-            <Text style={styles.sectionTitle}>{comparar ? 'VI' : 'V'}. Análisis Probabilístico</Text>
-            <View style={styles.probBox}>
-              <Text style={styles.probTitle}>Evento Calculado (Muestra A): {probabilidadA.condicion}</Text>
-              <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
-              <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + espacioMuestralA + " }"}</Text>
+        <View style={{marginTop: 20}}>
+          <View style={styles.dualRow}>
+            <View style={styles.column}>
+              <Text style={[styles.colHeader, styles.colA]}>PROBABILIDAD A</Text>
+              {probabilidadA ? (
+                <View style={styles.probBox}>
+                  <Text style={styles.probTitle}>Evento: {probabilidadA.condicion}</Text>
+                  <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
+                  <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + espacioMuestralA + " }"}</Text>
+                </View>
+              ) : <Text style={{fontSize: 8, color: '#999'}}>No se calculó probabilidad para A</Text>}
             </View>
+
+            {comparar && (
+              <View style={styles.column}>
+                <Text style={[styles.colHeader, styles.colB]}>PROBABILIDAD B</Text>
+                {probabilidadB ? (
+                  <View style={styles.probBox}>
+                    <Text style={styles.probTitle}>Evento: {probabilidadB.condicion}</Text>
+                    <Text style={[styles.probValue, {color: '#749c00'}]}>P(E) = {probabilidadB.porcentaje}%</Text>
+                    <Text style={styles.probSpace}>ESPACIO MUESTRAL: {"{ " + espacioMuestralB + " }"}</Text>
+                  </View>
+                ) : <Text style={{fontSize: 8, color: '#999'}}>No se calculó probabilidad para B</Text>}
+              </View>
+            )}
           </View>
-        )}
+        </View>
         
-        <Text style={styles.footer} fixed>Página {comparar ? '5' : '4'} | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página {comparar ? '6' : '4'} | Reporte Estadístico UHD</Text>
       </Page>
 
       {/* SECCIÓN: VISUALIZACIÓN GRÁFICA */}
       <Page size="A4" style={styles.page}>
-        <View>
+        <View id="section-visual">
           <Text style={styles.sectionTitle}>{probabilidadA ? (comparar ? 'VII' : 'VI') : (comparar ? 'VI' : 'V')}. Visualización Gráfica UHD</Text>
         </View>
 
@@ -601,7 +626,7 @@ const ReportePDF = ({ datosA = [], estadisticosA = {}, frecuenciasA = [], grafic
           </View>
         )}
         
-        <Text style={styles.footer} fixed>Página {comparar ? '6' : '5'} | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página {comparar ? '7' : '5'} | Reporte Estadístico UHD</Text>
       </Page>
     </Document>
   );

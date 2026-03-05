@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { VscArchive, VscSettingsGear, VscChevronUp, VscHistory } from 'react-icons/vsc';
 import BlurText from '../componentes/BlurText';
-import StartButton from '../componentes/StartButton';
 import Dock from '../componentes/Dock';
 
 const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {

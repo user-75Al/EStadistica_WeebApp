@@ -34,6 +34,7 @@ const CalculosPage = ({
   const [showInputB, setShowInputB] = useState(false);
   const [showInputA, setShowInputA] = useState(modo === 'manual');
   const [probabilidadResult, setProbabilidadResult] = useState(null);
+  const [probabilidadResultB, setProbabilidadResultB] = useState(null);
   const [horaAnalisis, setHoraAnalisis] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [email, setEmail] = useState('');
@@ -88,6 +89,7 @@ const CalculosPage = ({
     if (resultadosA || resultadosB) {
       setHoraAnalisis(new Date().toLocaleTimeString());
       setProbabilidadResult(null);
+      setProbabilidadResultB(null);
     }
   }, [resultadosA, resultadosB]);
 
@@ -100,7 +102,7 @@ const CalculosPage = ({
   useEffect(() => {
     setImagenes({ a: [], b: [] });
     setPdfPreparado(false);
-  }, [probabilidadResult, resultadosA, resultadosB, comparar]);
+  }, [probabilidadResult, probabilidadResultB, resultadosA, resultadosB, comparar]);
 
   const capturarGrafico = async (elemento, intentos = 3) => {
     console.log(`[PDF] Iniciando captura de elemento:`, elemento);
@@ -214,7 +216,7 @@ const CalculosPage = ({
         frecuenciasA={resultadosA.frecuencias} graficosImgsA={imagenes.a} 
         datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} 
         frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={imagenes.b} 
-        comparar={comparar} probabilidadA={probabilidadResult} 
+        comparar={comparar} probabilidadA={probabilidadResult} probabilidadB={probabilidadResultB}
       />;
       const blob = await pdf(doc).toBlob();
       const reader = new FileReader();
@@ -443,7 +445,7 @@ const CalculosPage = ({
 
               {pdfPreparado ? (
                 <PDFDownloadLink 
-                  document={<ReportePDF datosA={resultadosA.datosOriginales} estadisticosA={resultadosA.estadisticos} frecuenciasA={resultadosA.frecuencias} graficosImgsA={imagenes.a} datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={imagenes.b} comparar={comparar} probabilidadA={probabilidadResult} />} 
+                  document={<ReportePDF datosA={resultadosA.datosOriginales} estadisticosA={resultadosA.estadisticos} frecuenciasA={resultadosA.frecuencias} graficosImgsA={imagenes.a} datosB={resultadosB?.datosOriginales || []} estadisticosB={resultadosB?.estadisticos || {}} frecuenciasB={resultadosB?.frecuencias || []} graficosImgsB={imagenes.b} comparar={comparar} probabilidadA={probabilidadResult} probabilidadB={probabilidadResultB} />} 
                   fileName="reporte.pdf"
                 >
                   {({ loading }) => (
@@ -502,7 +504,7 @@ const CalculosPage = ({
               <div className="section-title centered"><h3>🎯 ANÁLISIS DE PROBABILIDAD</h3></div>
               <div className="dual-grid">
                 <div className="column-a"><Probabilidad datos={resultadosA.datosOriginales} onResultadoChange={setProbabilidadResult} /></div>
-                <div className="column-b"><Probabilidad datos={resultadosB.datosOriginales} /></div>
+                <div className="column-b"><Probabilidad datos={resultadosB.datosOriginales} onResultadoChange={setProbabilidadResultB} /></div>
               </div>
             </motion.section>
             <motion.section id="tabla" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>

@@ -29,26 +29,46 @@ const ExplicacionProcedimiento = ({ resultados, resultadosB, comparar, pasos: pa
       ];
     }
 
-    // MODO INDIVIDUAL: IA PREDICTIVA Y RECOMENDACIÓN
+    // MODO INDIVIDUAL: IA PREDICTIVA Y RECOMENDACIÓN COMPLETA (6 Tarjetas)
     if (resultados) {
       const { estadisticos } = resultados;
       const insights = generateInsights(estadisticos);
+      const tieneOutliers = estadisticos.outliers && estadisticos.outliers.length > 0;
       
       return [
+        // FILA 1: ESTRATÉGICAS
         {
           titulo: "🎯 RECOMENDACIÓN TÉCNICA",
-          desc: insights[0],
-          formula: "|x̄ - Me| > 10%?"
+          desc: insights.consistencia,
+          formula: "Prueba de Asimetría"
+        },
+        {
+          titulo: "📉 ANÁLISIS DE ESTABILIDAD",
+          desc: insights.volatilidad,
+          formula: "Coeficiente de Variación"
         },
         {
           titulo: "🔮 PREDICCIÓN (FORECASTING)",
-          desc: insights[2],
-          formula: "P(x) = x̄ ± 1s"
+          desc: insights.prediccion,
+          formula: "Intervalo Probabilístico 68%"
+        },
+        // FILA 2: TÉCNICAS / IA PROFUNDA
+        {
+          titulo: "💼 INFERENCIA ESTADÍSTICA",
+          desc: insights.inferencia,
+          formula: "Confianza al 95% (Z=1.96)"
         },
         {
-          titulo: "🧬 ANÁLISIS DE MORFOLOGÍA",
-          desc: insights[3],
-          formula: "Sesgo & Curtosis"
+          titulo: "🧬 MORFOLOGÍA DE DATOS",
+          desc: insights.morfologia,
+          formula: "Análisis de Distribución"
+        },
+        {
+          titulo: "🛡️ CALIDAD DE MUESTRA",
+          desc: tieneOutliers 
+            ? `¡Atención!: Se detectaron ${estadisticos.outliers.length} valores atípicos (${estadisticos.outliers.join(', ')}). Estos datos podrían distorsionar el análisis.` 
+            : "Muestra limpia: No se detectaron valores atípicos significativos que afecten la integridad de los resultados.",
+          formula: "Algoritmo de Tukey (IQR)"
         }
       ];
     }
