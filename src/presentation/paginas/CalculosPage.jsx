@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { toPng } from 'html-to-image';
 import Skeleton from 'react-loading-skeleton';
@@ -91,6 +92,15 @@ const CalculosPage = ({
 
   if (!resultadosA) return null;
 
+  const revealVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
   return (
     <div className="calculos-container-wrapper" style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
       
@@ -149,8 +159,15 @@ const CalculosPage = ({
         )}
 
         <main className="results-grid-layout">
-          {/* SECCIONES DINÁMICAS */}
-          <section id="estadisticos" className="results-section-card">
+          {/* SECCIONES DINÁMICAS CON SCROLL REVEAL */}
+          <motion.section 
+            id="estadisticos" 
+            className="results-section-card"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealVariants}
+          >
             <div className="section-title"><h3>Estadísticos Básicos</h3></div>
             <div className={comparar ? 'comparison-flex' : ''}>
               <div className="sample-column">
@@ -164,18 +181,32 @@ const CalculosPage = ({
                 </div>
               )}
             </div>
-          </section>
+          </motion.section>
 
-          <section id="probabilidad" className="results-section-card">
+          <motion.section 
+            id="probabilidad" 
+            className="results-section-card"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealVariants}
+          >
             <div className="section-title"><h3>Análisis de Probabilidad</h3></div>
             <div className={comparar ? 'comparison-flex' : ''}>
               <div className="sample-column"><Probabilidad datos={resultadosA.datosOriginales} /></div>
               {comparar && resultadosB && <div className="sample-column"><Probabilidad datos={resultadosB.datosOriginales} /></div>}
             </div>
-          </section>
+          </motion.section>
 
           <div className={comparar ? 'comparison-flex' : 'results-flex-dual'}>
-            <section id="tabla" className="results-section-card flex-item">
+            <motion.section 
+              id="tabla" 
+              className="results-section-card flex-item"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={revealVariants}
+            >
               <div className="section-title"><h3>Frecuencias</h3></div>
               <TablaFrecuencias frecuencias={resultadosA.frecuencias} hoverIndex={hoverIndex} />
               {comparar && resultadosB && (
@@ -184,9 +215,16 @@ const CalculosPage = ({
                   <TablaFrecuencias frecuencias={resultadosB.frecuencias} />
                 </div>
               )}
-            </section>
+            </motion.section>
 
-            <section id="tallo-hoja" className="results-section-card flex-item">
+            <motion.section 
+              id="tallo-hoja" 
+              className="results-section-card flex-item"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={revealVariants}
+            >
               <div className="section-title"><h3>Diagrama Tallo y Hoja</h3></div>
               <StemLeafDiagram datos={resultadosA.datosOriginales} />
               {comparar && resultadosB && (
@@ -195,10 +233,17 @@ const CalculosPage = ({
                   <StemLeafDiagram datos={resultadosB.datosOriginales} />
                 </div>
               )}
-            </section>
+            </motion.section>
           </div>
 
-          <section id="graficos" className="results-section-card">
+          <motion.section 
+            id="graficos" 
+            className="results-section-card"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={revealVariants}
+          >
             <div className="section-title"><h3>Visualización Gráfica</h3></div>
             <div ref={chartsRef} className={comparar ? 'comparison-flex' : ''}>
               <div className="sample-column">
@@ -212,11 +257,18 @@ const CalculosPage = ({
                 </div>
               )}
             </div>
-          </section>
+          </motion.section>
 
-          <section id="interpretacion" className="results-section-card">
+          <motion.section 
+            id="interpretacion" 
+            className="results-section-card"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={revealVariants}
+          >
             <ExplicacionProcedimiento resultados={resultadosA} />
-          </section>
+          </motion.section>
         </main>
       </div>
 
@@ -299,8 +351,8 @@ const CalculosPage = ({
         .sample-b { background: rgba(202, 244, 56, 0.1); color: var(--color-lime); }
 
         .action-btn-pill {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           color: #fff;
           padding: 10px 20px;
           border-radius: 50px;
