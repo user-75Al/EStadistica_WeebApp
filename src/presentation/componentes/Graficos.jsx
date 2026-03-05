@@ -38,6 +38,29 @@ ChartJS.register(
 
 Modal.setAppElement('#root');
 
+const chartExplanations = {
+  'histograma': {
+    titulo: "Histograma y Polígono",
+    formula: "fᵢ vs xᵢ",
+    desc: "Muestra la distribución de frecuencias absolutas. El polígono ayuda a visualizar la tendencia y forma de la distribución."
+  },
+  'ojiva': {
+    titulo: "Ojiva",
+    formula: "Fᵢ vs xᵢ",
+    desc: "Representa las frecuencias acumuladas. Útil para determinar cuántos datos están por debajo de un valor (percentiles)."
+  },
+  'pareto': {
+    titulo: "Diagrama de Pareto",
+    formula: "Regla 80/20",
+    desc: "Ordena los valores por frecuencia descendente para identificar los elementos más significativos de la muestra."
+  },
+  'pie': {
+    titulo: "Distribución Top 5",
+    formula: "fᵣ * 360°",
+    desc: "Visualiza la proporción de los 5 valores más frecuentes respecto al total de la muestra."
+  }
+};
+
 const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [activeChart, setActiveChart] = useState(null);
@@ -46,7 +69,6 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
   const fiData = frecuencias.map(f => f.fi);
   const FiData = frecuencias.map(f => f.Fi);
 
-  // Datos para Pareto
   const paretoData = [...frecuencias].sort((a, b) => b.fi - a.fi);
   const paretoLabels = paretoData.map(f => f.valor);
   const paretoFi = paretoData.map(f => f.fi);
@@ -87,7 +109,7 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
     labels,
     datasets: [
       {
-        label: 'fi (Frecuencia Absoluta)',
+        label: 'fi',
         data: fiData,
         backgroundColor: (context) => {
           const chart = context.chart;
@@ -99,7 +121,7 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
         borderWidth: 1,
       },
       {
-        label: 'Polígono de Frecuencias',
+        label: 'Polígono',
         data: fiData,
         borderColor: '#DE443B',
         backgroundColor: '#DE443B',
@@ -120,33 +142,11 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
             xMax: labels.indexOf(Number(estadisticos?.media)),
             borderColor: 'rgb(255, 99, 132)',
             borderWidth: 2,
-            label: {
-              display: true,
-              content: 'Media',
-              position: 'start'
-            }
-          },
-          lineModa: {
-            type: 'line',
-            xMin: labels.indexOf(Number(Array.isArray(estadisticos?.moda) ? estadisticos.moda[0] : estadisticos?.moda)),
-            xMax: labels.indexOf(Number(Array.isArray(estadisticos?.moda) ? estadisticos.moda[0] : estadisticos?.moda)),
-            borderColor: 'rgb(54, 162, 235)',
-            borderWidth: 2,
-            borderDash: [6, 6],
-            label: {
-              display: true,
-              content: 'Moda',
-              position: 'end'
-            }
+            label: { display: true, content: 'x̄', position: 'start' }
           }
         }
       }
     }
-  };
-
-  const openModal = (chartType) => {
-    setActiveChart(chartType);
-    setModalIsOpen(true);
   };
 
   const renderChart = (type, isModal = false) => {
@@ -155,7 +155,7 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
       case 'histograma': return <Chart type='bar' data={histogramaData} options={{...options, ...annotationOptions}} />;
       case 'ojiva': return <Line data={{ labels, datasets: [{ label: 'Fi', data: FiData, borderColor: '#DE443B', backgroundColor: '#DE443B', tension: 0.1 }] }} options={options} />;
       case 'pareto': return <Chart type='bar' data={{ labels: paretoLabels, datasets: [{ type: 'bar', label: 'fi', data: paretoFi, backgroundColor: '#006BB4', yAxisID: 'y' }, { type: 'line', label: '% Acum', data: paretoPercent, borderColor: '#DE443B', yAxisID: 'y1' }] }} options={{...options, scales: {...options.scales, y1: { position: 'right', min: 0, max: 100, ticks: { color: '#DE443B' }, grid: { display: false } }}}} />;
-      case 'pie': return <Pie data={{ labels: labels.slice(0, 5), datasets: [{ data: fiData.slice(0, 5), backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'] }] }} options={{...options, scales: {}}} />;
+      case 'pie': return <Pie data={{ labels: labels.slice(0, 5), datasets: [{ data: fiData.slice(0, 5), backgroundColor: ['#DE443B', '#006BB4', '#162325', '#b1dae7', '#caf438'] }] }} options={{...options, maintainAspectRatio: true, scales: {}}} />;
       default: return null;
     }
   };
@@ -164,45 +164,38 @@ const Graficos = ({ frecuencias, datosOriginales, estadisticos, onHoverIndex }) 
     <div className="graficos-container">
       {[
         { id: 'histograma', title: 'Histograma y Polígono' },
-        { id: 'ojiva', title: 'Ojiva (Frecuencia Acumulada)' },
-        { id: 'pareto', title: 'Diagrama de Pareto' },
-        { id: 'pie', title: 'Distribución (Top 5)' }
+        { id: 'ojiva', title: 'Ojiva' },
+        { id: 'pareto', title: 'Pareto' },
+        { id: 'pie', title: 'Distribución Top 5' }
       ].map(chart => (
         <div key={chart.id} className="chart-card glass">
-          <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {chart.title}
-              <VscInfo size={16} style={{ color: 'var(--color-sky)', cursor: 'help' }} data-tooltip-id="chart-tooltip" data-tooltip-content={chart.id} />
+              <VscInfo size={14} style={{ color: 'var(--color-sky)', cursor: 'help' }} data-tooltip-id="chart-info-tooltip" data-tooltip-content={chart.id} />
             </span>
-            <VscScreenFull 
-              size={18} 
-              style={{ cursor: 'pointer', color: 'var(--color-lime)' }} 
-              onClick={() => openModal(chart.id)}
-            />
+            <VscScreenFull size={16} style={{ cursor: 'pointer', color: 'var(--color-lime)' }} onClick={() => { setActiveChart(chart.id); setModalIsOpen(true); }} />
           </h3>
-          <div className="chart-box">
+          <div className="chart-box" style={{ height: '180px' }}>
             {renderChart(chart.id)}
           </div>
         </div>
       ))}
 
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
-        style={{
-          overlay: { backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 2000 },
-          content: { background: '#060010', border: '1px solid var(--color-lime)', borderRadius: '20px', padding: '40px' }
-        }}
-      >
+      <Modal isOpen={modalIsOpen} onRequestClose={() => setModalIsOpen(false)} style={{ overlay: { backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 2000 }, content: { background: '#060010', border: '1px solid var(--color-lime)', borderRadius: '20px' } }}>
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <button onClick={() => setModalIsOpen(false)} style={{ alignSelf: 'flex-end', background: 'var(--color-lime)', border: 'none', padding: '10px 20px', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '20px' }}>Cerrar</button>
-          <div style={{ flex: 1 }}>
-            {renderChart(activeChart, true)}
-          </div>
+          <button onClick={() => setModalIsOpen(false)} style={{ alignSelf: 'flex-end', background: 'var(--color-lime)', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Cerrar</button>
+          <div style={{ flex: 1, marginTop: '20px' }}>{renderChart(activeChart, true)}</div>
         </div>
       </Modal>
 
-      <Tooltip id="chart-tooltip" />
+      <Tooltip id="chart-info-tooltip" style={{ backgroundColor: '#162325', color: '#fff', borderRadius: '10px', zIndex: 3000, maxWidth: '250px' }} render={({ content }) => (
+        <div style={{ padding: '5px' }}>
+          <strong style={{ color: 'var(--color-lime)' }}>{chartExplanations[content]?.titulo}</strong>
+          <p style={{ fontSize: '0.8rem', margin: '5px 0', color: 'var(--color-sky)' }}>{chartExplanations[content]?.formula}</p>
+          <p style={{ fontSize: '0.75rem', color: '#ccc' }}>{chartExplanations[content]?.desc}</p>
+        </div>
+      )} />
     </div>
   );
 };
