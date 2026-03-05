@@ -13,6 +13,7 @@ import PillNav from './presentation/componentes/PillNav';
 import ClearButton from './presentation/componentes/ClearButton';
 import { ServiciosEstadistica } from './application/implementaciones/ServiciosEstadistica';
 import { LocalDatosRepository } from './infrastructure/implementaciones/LocalDatosRepository';
+import { Datos } from './core/entidades/Datos';
 import './presentation/estilos/global.css';
 
 const AppContent = () => {
@@ -51,9 +52,11 @@ const AppContent = () => {
         setResultadosA(res);
         setResultadosB(null);
         setComparar(false);
+        actualizarHistorial(res.datosOriginales);
       } else {
         setResultadosB(res);
         setComparar(true);
+        actualizarHistorial(res.datosOriginales);
       }
       toast.success(`Datos aleatorios generados (Muestra ${target})`);
     }
@@ -79,16 +82,18 @@ const AppContent = () => {
     }
   };
 
-  const handleCargarHistorial = (datos) => {
+  const handleCargarHistorial = (datosArray) => {
     try {
-      const res = servicios.obtenerResultados({ getDatos: () => datos });
+      setModo('manual');
+      const datosEntidad = new Datos(datosArray);
+      const res = servicios.obtenerResultados(datosEntidad);
       setResultadosA(res);
       setResultadosB(null);
       setComparar(false);
-      setModo('manual');
-      toast.success('Análisis recuperado del historial');
+      toast.success('Análisis cargado desde el historial');
       navigate('/calculos');
     } catch (e) {
+      console.error(e);
       toast.error("Error al cargar historial");
     }
   };
@@ -100,7 +105,7 @@ const AppContent = () => {
     setResultadosB(null);
     setComparar(false);
     setError(null);
-    toast('Sesión reiniciada', { icon: '🧹' });
+    toast('Campos limpiados', { icon: '🧹' });
     navigate('/');
   };
 

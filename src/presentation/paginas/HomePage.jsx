@@ -80,9 +80,8 @@ const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
 
           {historial.length > 0 && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
               className="recent-history glass"
               style={{
                 marginTop: '2rem',
@@ -91,10 +90,13 @@ const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
                 textAlign: 'left',
                 background: 'rgba(255,255,255,0.02)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.05)'
+                border: '1px solid rgba(255,255,255,0.05)',
+                width: '100%',
+                maxWidth: '600px',
+                margin: '2rem auto 0'
               }}
             >
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-lime)', marginBottom: '15px', fontSize: '1rem' }}>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-lime)', marginBottom: '15px', fontSize: '1rem', fontWeight: 'bold' }}>
                 <VscHistory /> ANÁLISIS RECIENTES
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -110,7 +112,7 @@ const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       cursor: 'pointer',
-                      transition: 'all 0.2s',
+                      transition: '0.2s',
                       border: '1px solid rgba(255,255,255,0.05)'
                     }}
                     onMouseEnter={(e) => {
@@ -124,7 +126,7 @@ const HomePage = ({ onOptionSelect, historial = [], onCargarHistorial }) => {
                   >
                     <span style={{ fontSize: '0.8rem', color: '#888' }}>Muestra #{historial.length - index}</span>
                     <span style={{ fontFamily: 'monospace', color: 'var(--color-sky)', fontSize: '0.9rem' }}>
-                      {datos.slice(0, 4).join(', ')}...
+                      {Array.isArray(datos) ? datos.slice(0, 4).join(', ') : ''}...
                     </span>
                     <span style={{ fontSize: '0.8rem', color: '#666' }}>({datos.length} datos)</span>
                   </div>

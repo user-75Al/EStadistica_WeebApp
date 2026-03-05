@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://user-75Al.github.io/EStadistica_WeebApp/",
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@react-pdf/renderer": "^4.3.2",
     "chart.js": "^4.4.0",
     "chartjs-plugin-annotation": "^3.1.0",
