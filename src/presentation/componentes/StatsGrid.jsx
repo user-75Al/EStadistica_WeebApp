@@ -45,6 +45,31 @@ const formulasInfo = {
     titulo: "Desviación Estándar (s)",
     formula: "√s²",
     desc: "Dispersión promedio de los datos respecto a la media."
+  },
+  'Q1': {
+    titulo: "Primer Cuartil (Q1)",
+    formula: "Percentil 25",
+    desc: "25% de los datos son menores o iguales a este valor."
+  },
+  'Q3': {
+    titulo: "Tercer Cuartil (Q3)",
+    formula: "Percentil 75",
+    desc: "75% de los datos son menores o iguales a este valor."
+  },
+  'Outliers': {
+    titulo: "Valores Atípicos",
+    formula: "Método de Tukey",
+    desc: "Datos que se alejan significativamente del resto."
+  },
+  'Sesgo': {
+    titulo: "Simetría (Sesgo)",
+    formula: "x̄ - Me",
+    desc: "Indica la inclinación de la distribución."
+  },
+  'Curtosis': {
+    titulo: "Apuntamiento (Curtosis)",
+    formula: "Momento 4",
+    desc: "Indica qué tan 'puntiaguda' es la distribución."
   }
 };
 
@@ -53,9 +78,9 @@ const StatsGrid = ({ estadisticos }) => {
     { label: 'Media', value: estadisticos.media },
     { label: 'Mediana', value: estadisticos.mediana },
     { label: 'Moda', value: estadisticos.moda },
+    { label: 'Rango', value: estadisticos.rango },
     { label: 'Mínimo', value: estadisticos.min },
     { label: 'Máximo', value: estadisticos.max },
-    { label: 'Rango', value: estadisticos.rango },
     { label: 'Varianza', value: estadisticos.varianza },
     { label: 'Desviación', value: estadisticos.desviacion },
   ];

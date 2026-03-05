@@ -31,21 +31,23 @@ const ExplicacionProcedimiento = ({ resultados, resultadosB, comparar, pasos: pa
     // Si es modo individual de Cálculos
     if (resultados) {
       const { estadisticos, datosOriginales } = resultados;
+      const tieneOutliers = estadisticos.outliers && estadisticos.outliers.length > 0;
+      
       return [
         {
-          titulo: "1. Preparación",
-          desc: `Se procesaron ${datosOriginales.length} datos ordenados. Este es el cimiento para localizar la mediana y definir los límites de la muestra.`,
-          formula: `n = ${datosOriginales.length}`
+          titulo: "1. Calidad de Datos",
+          desc: `${tieneOutliers ? `Se detectaron ${estadisticos.outliers.length} valores atípicos (${estadisticos.outliers.join(', ')}). ` : 'Muestra limpia sin valores atípicos significativos. '} El rango intercuartílico es de ${estadisticos.iqr}.`,
+          formula: `IQR = Q3 - Q1 = ${estadisticos.iqr}`
         },
         {
-          titulo: "2. Centro de Datos",
-          desc: `La media (${estadisticos.media}) y la mediana (${estadisticos.mediana}) nos indican el punto de equilibrio y el valor central real de la muestra.`,
-          formula: `x̄ = Σx/n`
+          titulo: "2. Morfología",
+          desc: `La distribución se comporta como ${estadisticos.sesgo} y presenta una curtosis de tipo ${estadisticos.curtosis}.`,
+          formula: `Sesgo: ${estadisticos.media} vs ${estadisticos.mediana}`
         },
         {
-          titulo: "3. Variabilidad",
-          desc: `Con una desviación de ${estadisticos.desviacion}, cuantificamos qué tan dispersos están los valores individuales respecto al promedio calculado.`,
-          formula: `s = √[Σ(x-x̄)²/(n-1)]`
+          titulo: "3. Dispersión UHD",
+          desc: `Con una desviación de ${estadisticos.desviacion} y varianza de ${estadisticos.varianza}, los datos muestran un nivel de ${Number(estadisticos.desviacion) > 2 ? 'alta' : 'baja'} concentración.`,
+          formula: `s = ${estadisticos.desviacion}`
         }
       ];
     }

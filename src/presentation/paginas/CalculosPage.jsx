@@ -573,7 +573,7 @@ const CalculosPage = ({
               </div>
             </motion.section>
             <motion.section id="interpretacion" className="results-section-card" initial="hidden" whileInView="visible" variants={revealVariants} viewport={{once:true}}>
-              <div className="section-title centered"><h3>💡 ANÁLISIS INTERPRETATIVO</h3></div>
+              <div className="section-title centered"><h3>💡 IA INSIGHTS & ANÁLISIS</h3></div>
               <div className="zoom-container">
                 <ExplicacionProcedimiento resultados={resultadosA} />
               </div>

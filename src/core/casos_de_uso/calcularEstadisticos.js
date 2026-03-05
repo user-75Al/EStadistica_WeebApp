@@ -56,6 +56,15 @@ export const calcularEstadisticos = (datos) => {
   if (diferencia > 0.1) sesgoLabel = "Sesgo a la Derecha (Positivo)";
   else if (diferencia < -0.1) sesgoLabel = "Sesgo a la Izquierda (Negativo)";
 
+  // NUEVO: Curtosis (Apuntamiento)
+  const sumaCuarta = nums.reduce((acc, curr) => acc + Math.pow(curr - mediaVal, 4), 0);
+  const m4 = sumaCuarta / n;
+  const m2 = sumaCuadrados / n;
+  const curtosisVal = (m4 / Math.pow(m2, 2)) - 3;
+  let curtosisLabel = "Mesocúrtica";
+  if (curtosisVal > 0.5) curtosisLabel = "Leptocúrtica (Puntiaguda)";
+  else if (curtosisVal < -0.5) curtosisLabel = "Platicúrtica (Aplanada)";
+
   return {
     media,
     mediana,
@@ -70,6 +79,7 @@ export const calcularEstadisticos = (datos) => {
     q3: q3.toFixed(2),
     iqr: iqr.toFixed(2),
     outliers: outliers,
-    sesgo: sesgoLabel
+    sesgo: sesgoLabel,
+    curtosis: curtosisLabel
   };
 };

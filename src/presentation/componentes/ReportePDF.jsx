@@ -1,5 +1,6 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, Link } from '@react-pdf/renderer';
+import { generateInsights } from '../utils/insightGenerator';
 
 const styles = StyleSheet.create({
   page: { 
@@ -38,6 +39,26 @@ const styles = StyleSheet.create({
   dateText: { 
     fontSize: 8, 
     color: '#888' 
+  },
+
+  // Index Styles
+  indexContainer: {
+    marginVertical: 20,
+    padding: 20,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8
+  },
+  indexTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#1E3A5F'
+  },
+  indexLink: {
+    fontSize: 10,
+    color: '#006BB4',
+    marginBottom: 5,
+    textDecoration: 'none'
   },
 
   sectionTitle: { 
@@ -100,6 +121,51 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#162325' 
   },
+
+  // Table Styles
+  table: { 
+    display: "table", 
+    width: "100%", 
+    borderStyle: "solid", 
+    borderWidth: 1, 
+    borderColor: '#EEE',
+    borderRightWidth: 0, 
+    borderBottomWidth: 0 
+  }, 
+  tableRow: { 
+    flexDirection: "row",
+    minHeight: 20,
+    alignItems: 'center'
+  }, 
+  tableColHeader: { 
+    width: "16.66%", 
+    borderStyle: "solid", 
+    borderWidth: 1, 
+    borderColor: '#EEE',
+    borderLeftWidth: 0, 
+    borderTopWidth: 0,
+    backgroundColor: '#1E3A5F'
+  }, 
+  tableCol: { 
+    width: "16.66%", 
+    borderStyle: "solid", 
+    borderWidth: 1, 
+    borderColor: '#EEE',
+    borderLeftWidth: 0, 
+    borderTopWidth: 0 
+  }, 
+  tableCellHeader: { 
+    margin: 4, 
+    fontSize: 7, 
+    fontWeight: 'bold',
+    color: '#FFF',
+    textAlign: 'center'
+  },
+  tableCell: { 
+    margin: 4, 
+    fontSize: 7,
+    textAlign: 'center'
+  },
   
   // Stem & Leaf
   slContainer: { 
@@ -158,7 +224,7 @@ const styles = StyleSheet.create({
   },
   chartImageContainer: {
     flex: 1,
-    backgroundColor: '#162325', // Fondo oscuro para que resalten las gráficas UHD
+    backgroundColor: '#162325', 
     borderRadius: 6,
     padding: 10,
     justifyContent: 'center',
@@ -190,6 +256,17 @@ const styles = StyleSheet.create({
     textAlign: 'justify'
   },
   
+  // Insights Style
+  insightItem: {
+    marginBottom: 8,
+    fontSize: 9,
+    color: '#333',
+    lineHeight: 1.4,
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: '#CAF438'
+  },
+
   // Probability
   probBox: { 
     padding: 15, 
@@ -281,6 +358,9 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
   const fecha = new Date().toLocaleString();
   const slA = getStemLeafData(datosA);
   const slB = getStemLeafData(datosB);
+  
+  const insightsA = generateInsights(estadisticosA, 'Muestra A');
+  const insightsB = comparar ? generateInsights(estadisticosB, 'Muestra B') : [];
 
   const renderStats = (estadisticos, type = 'A') => (
     <View style={styles.statsGrid}>
@@ -288,6 +368,29 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         <View key={k} style={[styles.statCard, type === 'A' ? styles.statCardA : styles.statCardB]}>
           <Text style={styles.statLabel}>{k.toUpperCase()}</Text>
           <Text style={styles.statValue}>{Array.isArray(v) ? v.join(', ') : v}</Text>
+        </View>
+      ))}
+    </View>
+  );
+
+  const renderFrequencyTable = (frecuencias) => (
+    <View style={styles.table}> 
+      <View style={styles.tableRow}> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>xᵢ</Text></View> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>fᵢ</Text></View> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>fᵣ</Text></View> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>fᵣ%</Text></View> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Fᵢ</Text></View> 
+        <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Fᵣ%</Text></View> 
+      </View>
+      {frecuencias.map((row, i) => (
+        <View key={i} style={styles.tableRow}> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{row.valor}</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fi}</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{row.fr}</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{(row.fr * 100).toFixed(2)}%</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{row.Fi}</Text></View> 
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{(row.Fr * 100).toFixed(2)}%</Text></View> 
         </View>
       ))}
     </View>
@@ -306,7 +409,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
 
   return (
     <Document>
-      {/* PÁGINA 1: RESUMEN ANALÍTICO */}
+      {/* PÁGINA 1: PORTADA E ÍNDICE INTERACTIVO */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -315,11 +418,34 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.dateText}>Generado el {fecha}</Text>
-            <Text style={[styles.dateText, {marginTop: 2}]}>Software V2.5 UHD</Text>
+            <Text style={[styles.dateText, {marginTop: 2}]}>IA-Enhanced Software V3.0</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>I. Métricas Descriptivas</Text>
+        <View style={styles.indexContainer}>
+          <Text style={styles.indexTitle}>TABLA DE CONTENIDOS (Interactiva)</Text>
+          <Link src="#section-metrics" style={styles.indexLink}>1. Métricas Descriptivas y de Calidad</Link>
+          <Link src="#section-insights" style={styles.indexLink}>2. Conclusiones Generadas por IA (Insights)</Link>
+          <Link src="#section-tables" style={styles.indexLink}>3. Tablas de Distribución de Frecuencias</Link>
+          <Link src="#section-dist" style={styles.indexLink}>4. Análisis de Distribución (Tallo y Hoja)</Link>
+          {probabilidadA && <Link src="#section-prob" style={styles.indexLink}>5. Análisis Probabilístico</Link>}
+          <Link src="#section-visual" style={styles.indexLink}>{probabilidadA ? '6' : '5'}. Visualización Gráfica UHD</Link>
+        </View>
+
+        <View style={{ marginTop: 20, padding: 15, borderLeftWidth: 4, borderLeftColor: '#CAF438', backgroundColor: '#FBFBFC' }}>
+          <Text style={{ fontSize: 10, lineHeight: 1.6, color: '#555' }}>
+            Este documento proporciona un análisis exhaustivo de los datos suministrados, utilizando algoritmos de estadística descriptiva avanzada e inteligencia analítica para la detección de patrones y anomalías.
+          </Text>
+        </View>
+        
+        <Text style={styles.footer} fixed>Reporte Estadístico UHD | Navegación Habilitada</Text>
+      </Page>
+
+      {/* PÁGINA 2: MÉTRICAS E INSIGHTS */}
+      <Page size="A4" style={styles.page}>
+        <View id="section-metrics">
+          <Text style={styles.sectionTitle}>I. Métricas Descriptivas y de Calidad</Text>
+        </View>
         <View style={styles.dualRow}>
           <View style={styles.column}>
             <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
@@ -333,7 +459,51 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>II. Análisis de Distribución (Tallo y Hoja)</Text>
+        <View id="section-insights" style={{ marginTop: 20 }}>
+          <Text style={styles.sectionTitle}>II. Conclusiones Generadas por IA (Insights)</Text>
+          <View style={{ backgroundColor: '#F8F9FA', padding: 15, borderRadius: 6 }}>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#006BB4', marginBottom: 10 }}>MUESTRA A - ANÁLISIS NARRATIVO</Text>
+            {insightsA.map((text, i) => (
+              <Text key={i} style={styles.insightItem}>{text}</Text>
+            ))}
+            
+            {comparar && (
+              <>
+                <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#749c00', marginVertical: 10 }}>MUESTRA B - ANÁLISIS NARRATIVO</Text>
+                {insightsB.map((text, i) => (
+                  <Text key={i} style={styles.insightItem}>{text}</Text>
+                ))}
+              </>
+            )}
+          </View>
+        </View>
+        
+        <Text style={styles.footer} fixed>Página 2 | Reporte Estadístico UHD</Text>
+      </Page>
+
+      {/* PÁGINA 3: TABLAS DE FRECUENCIA */}
+      <Page size="A4" style={styles.page}>
+        <View id="section-tables">
+          <Text style={styles.sectionTitle}>III. Tablas de Distribución de Frecuencias</Text>
+        </View>
+        <View style={{ marginBottom: 20 }}>
+          <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
+          {renderFrequencyTable(frecuenciasA)}
+        </View>
+        {comparar && (
+          <View>
+            <Text style={[styles.colHeader, styles.colB]}>MUESTRA B</Text>
+            {renderFrequencyTable(frecuenciasB)}
+          </View>
+        )}
+        <Text style={styles.footer} fixed>Página 3 | Reporte Estadístico UHD</Text>
+      </Page>
+
+      {/* PÁGINA 4: DISTRIBUCIÓN Y PROBABILIDAD */}
+      <Page size="A4" style={styles.page}>
+        <View id="section-dist">
+          <Text style={styles.sectionTitle}>IV. Análisis de Distribución (Tallo y Hoja)</Text>
+        </View>
         <View style={styles.dualRow}>
           <View style={styles.column}>
             <Text style={[styles.colHeader, styles.colA]}>MUESTRA A</Text>
@@ -348,8 +518,8 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
         </View>
 
         {probabilidadA && (
-          <View style={{marginTop: 10}}>
-            <Text style={styles.sectionTitle}>III. Análisis Probabilístico</Text>
+          <View id="section-prob" style={{marginTop: 20}}>
+            <Text style={styles.sectionTitle}>V. Análisis Probabilístico</Text>
             <View style={styles.probBox}>
               <Text style={styles.probTitle}>Evento Calculado (Muestra A): {probabilidadA.condicion}</Text>
               <Text style={styles.probValue}>P(E) = {probabilidadA.porcentaje}%</Text>
@@ -358,16 +528,13 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
         )}
         
-        <Text style={styles.footer} fixed>Página 1 | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página 4 | Reporte Estadístico UHD</Text>
       </Page>
 
-      {/* PÁGINA 2: VISUALIZACIÓN GRÁFICA */}
+      {/* PÁGINA 5: VISUALIZACIÓN GRÁFICA */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.title}>VISUAL ANALYTICS</Text>
-            <Text style={styles.subtitle}>Representación Gráfica en Alta Resolución</Text>
-          </View>
+        <View id="section-visual">
+          <Text style={styles.sectionTitle}>{probabilidadA ? 'VI' : 'V'}. Visualización Gráfica UHD</Text>
         </View>
 
         {graficosImgsA && graficosImgsA.length > 0 ? (
@@ -404,7 +571,7 @@ const ReportePDF = ({ datosA, estadisticosA, frecuenciasA, graficosImgsA, datosB
           </View>
         )}
         
-        <Text style={styles.footer} fixed>Página 2 | Reporte Estadístico UHD</Text>
+        <Text style={styles.footer} fixed>Página 5 | Reporte Estadístico UHD</Text>
       </Page>
     </Document>
   );
